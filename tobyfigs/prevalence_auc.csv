@@ -1,0 +1,21 @@
+variable,AUC,Infectious period
+Mean,1.0,-weekly
+Variance,1.0,-weekly
+Var. 1st Diff,1.0,-weekly
+Index of Dis.,1.0,-weekly
+Autocovar.,1.0,-weekly
+Autocorr.,0.99,-weekly
+Decay time,0.99,-weekly
+Coeff. Var,0.36,-weekly
+Skewness,0.53,-weekly
+Kurtosis,0.52,-weekly
+Mean,1.0,-monthly
+Variance,0.95,-monthly
+Var. 1st Diff,0.0,-monthly
+Index of Dis.,0.74,-monthly
+Autocovar.,0.95,-monthly
+Autocorr.,1.0,-monthly
+Decay time,1.0,-monthly
+Coeff. Var,1.0,-monthly
+Skewness,0.9,-monthly
+Kurtosis,0.85,-monthly
