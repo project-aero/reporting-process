@@ -32,12 +32,21 @@ sample_process <- function(external_forcing = 1 / 7, host_lifetime = 70 * 365,
   do_sim(simtest)
 }
 
-sample_observation <- function(cases, reporting_prob, dispersion_parameter, aggregation_days){
-  ## Aggregates time series of cases and adds random reporting error.
-  ## Note, a high values of the dispersion parameters _reduces_ the dispersion
-  ts(cases, start = toe)
-  tots <- aggregate.ts(cases, nfrequency=1 / aggregation_days)
+# new sample_observation() function taking a time series as input
+sample_observation <- function (cases, sampling_interval = 1, tau = 1, reporting_prob = 1, dispersion_parameter = 100) {
+  tots <- aggregate.ts(cases, nfrequency = 1/(tau/sampling_interval))
   mu <- tots * reporting_prob
   n <- length(mu)
-  rnbinom(n=n, mu=mu, size=dispersion_parameter)
+  sampled <- rnbinom(n = n, mu = mu, size = dispersion_parameter)
+  ts(sampled,start=start(tots),end=end(tots),frequency=frequency(tots))
 }
+
+# sample_observation <- function(cases, reporting_prob, dispersion_parameter, aggregation_days){
+#   ## Aggregates time series of cases and adds random reporting error.
+#   ## Note, a high values of the dispersion parameters _reduces_ the dispersion
+#   ts(cases, start = toe)
+#   tots <- aggregate.ts(cases, nfrequency=1 / aggregation_days)
+#   mu <- tots * reporting_prob
+#   n <- length(mu)
+#   rnbinom(n=n, mu=mu, size=dispersion_parameter)
+# }
