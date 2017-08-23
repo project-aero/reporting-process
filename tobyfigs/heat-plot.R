@@ -79,7 +79,7 @@ org_data <- function(dat){
   return(ord)
 }
 
-yLabs <- c("Mean", "Variance", "Var. 1st Diff", 
+yLabs <- c("Mean", "Variance", "1st Diff. Var.", 
            "Index of Dis.", "Autocovar.", "Autocorr.",
            "Decay time", "Coeff. Var", "Skewness",
            "Kurtosis")
