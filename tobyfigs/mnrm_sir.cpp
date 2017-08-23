@@ -42,7 +42,7 @@ double gamm = 1.0;
 const double zeta = 1.0;
 const double mu = 1./(70.*52.);
 const double nu = 1./(70.*52.);
-const double beta = R0*(gamm +mu);
+double beta = R0*(gamm +mu);
 const double p0 = 0.0;
 const double tvacc = temin;
 
@@ -102,9 +102,12 @@ int main(int argc, const char* argv[])
 	else cerr << "# No value for srand given, default used: srand (time(NULL))" << endl;
 	if(argc > 5){if(strncmp(argv[5],"-n",2) == 0) null_param = 1;} // seed for rng
 	else cerr << "# No value for scenario, default used: -e (emerging)" << endl;
-	if(argc > 6){if(strncmp(argv[6],"-monthly",2) == 0) gamm= 7./30.;} // seed for rng
+	if(argc > 6){if(strncmp(argv[6],"-monthly",2) == 0){
+		cerr << "Monthly infectious period" << endl;
+		gamm= 7./30.;}} // seed for rng
 	else cerr << "# No value for infectious period, default used: -weekly" << endl;
 
+	beta = R0*(gamm +mu);
   	srand (time(NULL));
 	gsl_rng * rng = gsl_rng_alloc (gsl_rng_taus);	
 	gsl_rng_set (rng, rand());
@@ -157,7 +160,9 @@ while(r<runs)
 	reset_initial_conditions(n, vaccine_uptake);
 	if(null_param == 1) vaccine_uptake = 0.5;
 	else vaccine_uptake = 0.0;
-
+	t = 0;
+	te = temin;
+	q = 0;
 	int cases = 0;
 
 

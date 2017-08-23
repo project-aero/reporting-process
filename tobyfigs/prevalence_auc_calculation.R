@@ -7,9 +7,10 @@ library(reshape2)
 
 #Compile simulator
 system("g++ mnrm_sir.cpp -o ./sir_sim -lgsl -lgslcblas")
+sir_command_root <- "./sir_sim 10 1000000 20 3"
 
 #Calculate EWS for times series data using spaero
-get_ews <- function(model_command){
+get_ews <- function(df){
   
   ## Wrapper for spaero::get_stats, sets function variables and returns only stats as a data frame. 
   #spaero parameters are hardcoded in here
@@ -25,7 +26,7 @@ get_ews <- function(model_command){
     )
   }
   
-  emerge <- read.table(text = system(model_command, intern = TRUE))
+  emerge <- df
   names(emerge) <- c("Time", "Infected", "R0", "N", "T", "Run")
   
   emerge %>%
@@ -75,26 +76,41 @@ get_auc <- function(df){
 
 
 
-inf_period <- c("-weekly", "-monthly")
 
 #Simulates 1000 replicates, N=1e6, 20yrs of data, rng seed = 1
 
 calculate_auc <- function(infectious_period){
   
-  sir_command <- paste("./sir_sim 1000 1000000 20 1",c("-e","-n"),infectious_period)
-  emerge_ews <- get_ews(sir_command[1])
-  not_ews <- get_ews(sir_command[2])
-  taus_test <- get_taus(emerge_ews)
-  taus_null <- get_taus(not_ews)
-  taus_test$isnull <- FALSE
-  taus_null$isnull <- TRUE
-  taus <- rbind(taus_test, taus_null)
+  sir_command <- paste(sir_command_root,c("-e","-n"),infectious_period)
+  emerge_data <- read.table(text = system(sir_command[1], intern = TRUE))
+  null_data <- read.table(text = system(sir_command[2], intern = TRUE))
   
-  df <- get_auc(taus)
-  df$`Infectious period` <- as.factor(infectious_period)
+  calculate_auc_agg <- function(aggregation_period){
+    edf <- emerge_data
+    ndf <- null_data
+    if(aggregation_period == "-monthly"){
+      edf <-  edf[edf$V1 %% 4 == 0, ]
+      ndf <-  ndf[ndf$V1 %% 4 == 0, ]
+    }
+    
+    emerge_ews <- get_ews(edf)
+    not_ews <- get_ews(ndf)
+    taus_test <- get_taus(emerge_ews)
+    taus_null <- get_taus(not_ews)
+    taus_test$isnull <- FALSE
+    taus_null$isnull <- TRUE
+    taus <- rbind(taus_test, taus_null)
+    
+    df <- get_auc(taus)
+    df$`Infectious period` <- as.factor(infectious_period)
+    df$`Aggregation period` <- as.factor(aggregation_period)
+    return(df)
+  }
+
+  df <- do.call(rbind,lapply(c("-weekly","-monthly"),calculate_auc_agg))
   return(df)
 }
 
-auc_data <- do.call(rbind,lapply(inf_period,calculate_auc))
+auc_data <- do.call(rbind,lapply(c("-weekly", "-monthly"),calculate_auc))
 
 write_csv(auc_data,"prevalence_auc.csv")

@@ -43,9 +43,9 @@ hl_data <- hl_data %>%
   mutate(neg_bin_k = as.factor(neg_bin_k)) %>%
   droplevels()
 new_levels <-  c("Mean", "Variance", "1st Diff. Var.", 
-  "Index of Dis.", "Autocovar.", "Autocorr.",
-  "Decay time", "Coeff. Var", "Skewness",
-  "Kurtosis")
+                 "Index of Dis.", "Autocovar.", "Autocorr.",
+                 "Decay time", "Coeff. Var", "Skewness",
+                 "Kurtosis")
 hl_data$variable <- factor(hl_data$variable,levels(hl_data$variable)[c(6,1,2,7,3,4,5,8,9,10)])
 levels(hl_data$variable) <- new_levels
 levels(hl_data$reporting_prob) <- c("High reporting","Low reporting")
@@ -54,10 +54,11 @@ levels(hl_data$neg_bin_k) <- c("High overdispersion", "Low overdispersion")
 #Define plotting function
 hl_plot <- function(hl_data){
   ggplot(hl_data) + 
-    geom_bar(aes(x=variable,y=AUC-0.5, fill = AUC),stat="identity", color = "white"  ) + 
+    geom_bar(aes(x=variable,y=AUC-0.5, fill = AUC, color = AUC),stat="identity"  ) + 
     facet_grid(reporting_prob~neg_bin_k) +
     geom_rangeframe(colour ="black") +
     scale_fill_gradientn(limits = c(0,1),colours=AUC_colors) +
+    scale_color_gradientn(limits = c(0,1),colours=AUC_colors) +
     scale_y_continuous(name = "AUC",labels=c("0.0","0.25","0.5","0.75","1.0"))
 }
 
@@ -81,11 +82,12 @@ hl_plot(hl_data) +#theme_par() +
         axis.text.x = element_text(color = text_color, angle = 45,
                                    vjust = 1, hjust=1),#family=font_chosen, size = 14),
         axis.text.y = element_text(color = text_color, family=font_chosen),
-        axis.ticks = element_line(color=text_color),
+        axis.ticks = element_line(color=rgb(0,0,0,.25),line),
         axis.line = element_blank(),
         legend.text = element_text(color = text_color, family=font_chosen),
         legend.title = element_text(color = text_color, family = font_chosen),
         panel.grid.major = element_blank(),
+        panel.grid.major.y = element_line(color = rgb(0,0,0,.25)),
         panel.grid.minor = element_blank(),
         panel.border = element_blank(),
         panel.background = element_rect(color=NA,fill=NA),

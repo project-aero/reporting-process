@@ -9,6 +9,12 @@ auc_data <- read.csv("prevalence_auc.csv")
 auc_data$`Infectious period` <- as.factor(auc_data$Infectious.period)
 levels(auc_data$`Infectious period`) <- c(expression(paste(gamma, "=1/30")),expression(paste(gamma, "=1/7")))
 
+auc_data$`Aggregation period` <- as.factor(auc_data$Aggregation.period)
+levels(auc_data$`Aggregation period`) <- c("Monthly~snapshots","Weekly~snapshots")
+
+auc_data$variable <- factor(auc_data$variable, levels = levels(auc_data$variable)[c(7,10,9,5,2,1,4,3,8,6)])
+
+
 auc_plot <- function(df){
   
   ## Eric's AUC gradient ##
@@ -27,11 +33,11 @@ auc_plot <- function(df){
   
   ggplot(df) + 
     # geom_pointrange(aes(x=variable,y=AUC, ymin=AUC-AUC_err, ymax= AUC+AUC_err, color=variable)) +
-    geom_bar(aes(x=variable,y=AUC-0.5, fill = AUC),stat="identity", color = "white"  ) + #, fill = "#088E7C") +
-    facet_grid(`Infectious period`~.,labeller = label_parsed)+
+    geom_bar(aes(x=variable,y=AUC-0.5, fill = AUC, color = AUC),stat="identity"  ) + #, fill = "#088E7C") +
+    facet_grid(`Infectious period`~`Aggregation period`,labeller = label_parsed)+
     geom_rangeframe(colour ="black") +
     scale_fill_gradientn(limits = c(0,1),colours=AUC_colors) +
-    #scale_fill_manual (values=AUC_colors) +
+    scale_color_gradientn(limits = c(0,1),colours=AUC_colors) +
     scale_y_continuous(name = "AUC",limits = c(-0.5,0.5),labels=c("0.0","0.25","0.5","0.75","1.0"))
   #scale_x_continuous(name = "")+#,labels=c("Variance","Variance convexity","Autocovariance",
   #                                      "Autocorrelation","Decay time", "Mean",
@@ -45,20 +51,23 @@ par(font.lab = 3)
 text_color <- "black"
 background_color <- "white"
 font_chosen <- "Helvetica"
-auc_plot(auc_data) + theme_par()+
-  theme(text = element_text(color=text_color, family=font_chosen),
+auc_plot(auc_data) +
+  theme(text = element_text(color=text_color, size = 18, family=font_chosen),
+        title = element_text(size = 14),
         line = element_line(color=text_color),
         rect = element_rect(color="black"),
         axis.title.x=element_blank(),
-        axis.title.y = element_text(color=text_color,face = "plain", family=font_chosen),
+        axis.title.y = element_text(color=text_color,face = "plain", 
+                                    family=font_chosen, size = 14),
         axis.text.x = element_text(color = text_color, angle = 45,
-                                   vjust = 1, hjust=1,family=font_chosen),
+                                   vjust = 1, hjust=1),#family=font_chosen, size = 14),
         axis.text.y = element_text(color = text_color, family=font_chosen),
-        axis.ticks = element_line(color=text_color),
+        axis.ticks = element_line(color=rgb(0,0,0,.25),line),
         axis.line = element_blank(),
         legend.text = element_text(color = text_color, family=font_chosen),
         legend.title = element_text(color = text_color, family = font_chosen),
         panel.grid.major = element_blank(),
+        panel.grid.major.y = element_line(color = rgb(0,0,0,.25)),
         panel.grid.minor = element_blank(),
         panel.border = element_blank(),
         panel.background = element_rect(color=NA,fill=NA),
@@ -68,6 +77,7 @@ auc_plot(auc_data) + theme_par()+
         strip.background = element_rect(fill=NA),
         plot.background = element_rect(color=NA, fill=background_color),
         plot.margin = unit(c(1,1,1,1), "cm"))
+
 
 ggsave("prevalence_auc.pdf",width =1.2*8.64,height=1.2*4.20)
 
