@@ -10,6 +10,7 @@
 #include <cstdio>
 #include <sstream>
 #include <string>
+#include <cstring>
 #include <vector>
 #include <gsl/gsl_rng.h> 
 #include <list>
@@ -102,9 +103,7 @@ int main(int argc, const char* argv[])
 	else cerr << "# No value for srand given, default used: srand (time(NULL))" << endl;
 	if(argc > 5){if(strncmp(argv[5],"-n",2) == 0) null_param = 1;} // seed for rng
 	else cerr << "# No value for scenario, default used: -e (emerging)" << endl;
-	if(argc > 6){if(strncmp(argv[6],"-monthly",2) == 0){
-		cerr << "Monthly infectious period" << endl;
-		gamm= 7./30.;}} // seed for rng
+	if(argc > 6){if(strncmp(argv[6],"-monthly",2) == 0){gamm= 7./30.;}} // seed for rng
 	else cerr << "# No value for infectious period, default used: -weekly" << endl;
 
 	beta = R0*(gamm +mu);
