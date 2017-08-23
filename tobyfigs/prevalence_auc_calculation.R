@@ -7,7 +7,7 @@ library(reshape2)
 
 #Compile simulator
 system("g++ mnrm_sir.cpp -o ./sir_sim -lgsl -lgslcblas")
-sir_command_root <- "./sir_sim 10 1000000 20 3"
+sir_command_root <- "./sir_sim 1000 1000000 20 3"
 
 #Calculate EWS for times series data using spaero
 get_ews <- function(df){

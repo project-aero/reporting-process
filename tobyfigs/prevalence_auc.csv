@@ -1,21 +1,41 @@
-variable,AUC,Infectious period
-Mean,1.0,-weekly
-Variance,1.0,-weekly
-Var. 1st Diff,1.0,-weekly
-Index of Dis.,1.0,-weekly
-Autocovar.,1.0,-weekly
-Autocorr.,0.99,-weekly
-Decay time,0.99,-weekly
-Coeff. Var,0.36,-weekly
-Skewness,0.53,-weekly
-Kurtosis,0.52,-weekly
-Mean,1.0,-monthly
-Variance,0.95,-monthly
-Var. 1st Diff,0.0,-monthly
-Index of Dis.,0.74,-monthly
-Autocovar.,0.95,-monthly
-Autocorr.,1.0,-monthly
-Decay time,1.0,-monthly
-Coeff. Var,1.0,-monthly
-Skewness,0.9,-monthly
-Kurtosis,0.85,-monthly
+variable,AUC,Infectious period,Aggregation period
+Variance,0.999996,-weekly,-weekly
+Var. 1st Diff,0.994152,-weekly,-weekly
+Autocovar.,0.999933,-weekly,-weekly
+Autocorr.,0.997845,-weekly,-weekly
+Decay time,0.997845,-weekly,-weekly
+Mean,0.999999,-weekly,-weekly
+Index of Dis.,0.999808,-weekly,-weekly
+Coeff. Var,0.3990805,-weekly,-weekly
+Skewness,0.6250305,-weekly,-weekly
+Kurtosis,0.564838,-weekly,-weekly
+Variance,0.999983,-weekly,-monthly
+Var. 1st Diff,0.998628,-weekly,-monthly
+Autocovar.,0.995244,-weekly,-monthly
+Autocorr.,0.923461,-weekly,-monthly
+Decay time,0.92552002002002,-weekly,-monthly
+Mean,0.999738,-weekly,-monthly
+Index of Dis.,0.9978395,-weekly,-monthly
+Coeff. Var,0.59633,-weekly,-monthly
+Skewness,0.6086295,-weekly,-monthly
+Kurtosis,0.6118015,-weekly,-monthly
+Variance,0.999525,-monthly,-weekly
+Var. 1st Diff,0.9748225,-monthly,-weekly
+Autocovar.,0.999365,-monthly,-weekly
+Autocorr.,0.9798685,-monthly,-weekly
+Decay time,0.9798685,-monthly,-weekly
+Mean,0.999971,-monthly,-weekly
+Index of Dis.,0.986886,-monthly,-weekly
+Coeff. Var,0.333964,-monthly,-weekly
+Skewness,0.6124115,-monthly,-weekly
+Kurtosis,0.4663285,-monthly,-weekly
+Variance,0.999903,-monthly,-monthly
+Var. 1st Diff,0.9959785,-monthly,-monthly
+Autocovar.,0.999381,-monthly,-monthly
+Autocorr.,0.929835,-monthly,-monthly
+Decay time,0.929835,-monthly,-monthly
+Mean,0.999974,-monthly,-monthly
+Index of Dis.,0.986085,-monthly,-monthly
+Coeff. Var,0.6142415,-monthly,-monthly
+Skewness,0.72559,-monthly,-monthly
+Kurtosis,0.6829745,-monthly,-monthly
