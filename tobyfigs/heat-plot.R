@@ -17,6 +17,9 @@ AUC.colors <- diverge_hcl(
   l = c(90, 10),  # Lightness range (edges, center) 
   power = 1  # exponent
 )
+#Gray colour used in paper:
+gray_colour <- rgb(0,0,0,.25)
+dl <- seq(0,1,0.01)
 
 ## AUC data ##
 load("res.RData")
@@ -80,7 +83,7 @@ org_data <- function(dat){
 }
 
 yLabs <- c("Mean", "Variance", "1st Diff. Var.", 
-           "Index of Dis.", "Autocovar.", "Autocorr.",
+           "Ind. of Dis.", "Autocovar.", "Autocorr.",
            "Decay time", "Coeff. Var", "Skewness",
            "Kurtosis")
 
@@ -104,7 +107,8 @@ addLines <- function(clr="white", lwd=1.5){
 
 dispLabs3 <- function(){
   #dispersion labels
-  axis(4, at = seq(46.5,50, length.out = 3)/50, labels = rep("", 3), tck=-.1)
+  axis(4, at = seq(46.5,50, length.out = 3)/50, 
+       labels = rep("", 3), tck=-.1, col.ticks = gray_colour,col = "white", pos = 1.05)
   mtext(side=4, "less dispersed", line=.95, las=1, cex=.6, at=1.05, xpd=T)
   
   mtext(side=4, "100", line=3, las=1, cex=.4, at=1, xpd=T)
@@ -147,51 +151,62 @@ par(oma=c(3,2,2,2), mar=c(1,5,3,3))
 image(H5, col=AUC.colors, xlab="", 
       ylab="", axes=F, main="",
       add.expr= abline(h=5/50, col="white"))
-axis(3, at=xVals, labels=xLabs)
-axis(2, at=yVals, labels=yLabs, las=1)
+axis(3, at=xVals, labels=xLabs, col.ticks = gray_colour, col = "white", pos = 1.03)
+axis(2, at=yVals, labels=yLabs, las=1, col.ticks = gray_colour, col = "white", pos = -0.05)
 mtext(side=3, text="Aggregated weekly", line=3)
 mtext(side=2, expression(paste(gamma, "=1/7")), line=5.5)
 addLines3()
 dispLabs3()
-box()
+#box()
 
 #arrows(x0=1.2, x1=1.2, y0=.87, y1=1.06, xpd=T, code=3, length = .05)
 
 par(mar=c(1,4,3,4))
 image(H6, col=AUC.colors, xlab="", 
       ylab="", axes=F)
-axis(3, at=xVals, labels=xLabs)
+axis(3, at=xVals, labels=xLabs, col.ticks = gray_colour,col = "white", pos = 1.03)
 mtext(side=3, text="Aggregated monthly", line=3)
-axis(4, at=yVals, labels=yLabs, las=1)
+axis(4, at=yVals, labels=yLabs, las=1, col.ticks = gray_colour, col = "white", pos =  1.05)
 addLines3()
-axis(2, at = seq(46.5,50,length.out = 3)/50, labels = rep("", 3), tck=-.1)
-box()
+axis(2, at = seq(46.5,50,length.out = 3)/50, 
+     labels = rep("", 3), tck=-.1,col.ticks = gray_colour, col = "white", pos = -0.05)
+#box()
 
 par(mar=c(4,5,0,3))
 image(H7, col=AUC.colors, xlab="", 
       ylab="", axes=F)
-axis(1, at=xVals, labels=xLabs)
-axis(2, at=yVals, labels=yLabs, las=1)
+axis(1, at=xVals, labels=xLabs, col.ticks = gray_colour, col = "white",pos = -0.03)
+axis(2, at=yVals, labels=yLabs, las=1, col.ticks = gray_colour, col = "white",pos = -0.05)
 mtext(side=2, expression(paste(gamma, "=1/30")), line=5.5)
 mtext(side=1, "Reporting probability", line=3)
 addLines3()
-axis(4, at = seq(46.5,50, length.out = 3)/50, labels = rep("", 3))
+#axis(4, at = seq(46.5,50, length.out = 3)/50, labels = rep("", 3), col.ticks = gray_colour)
 dispLabs3()
-box()
+#box()
 
 par(mar=c(4,4,0,4))
 image(H8, col=AUC.colors, xlab="", 
       ylab="", axes=F)
-axis(1, at=xVals, labels=xLabs)
-axis(4, at=yVals, labels=yLabs, las=1)
+axis(1, at=xVals, labels=xLabs, col.ticks = gray_colour, col = "white", pos = -0.03)
+axis(4, at=yVals, labels=yLabs, las=1, col.ticks = gray_colour, col = "white", pos = 1.05)
 mtext(side=1, "Reporting probability", line=3)
 addLines3()
-axis(2, at = seq(46.5,50, length.out = 3)/50, labels = rep("", 3), tck=-.1)
-box()
+axis(2, at = seq(46.5,50, length.out = 3)/50, 
+     labels = rep("", 3), tck=-.1, col.ticks = gray_colour, col = "white", pos = -0.05)
+#box()
 
-par(mar=c(0,0,0,0), oma=c(0,0,0,0))
-image.plot( zlim=c(0,1), legend.only=TRUE, horizontal=TRUE,
-            col=AUC.colors, smallplot=c(.25,.8,0.7,.85), legend.lab = "AUC")
+par(mar=c(1.2,7,1.2,7)) 
+#par(mar= c(0,0,0,0), oma=c(1.,0,0,0))
+
+legend_data <- matrix(dl, nrow = length(dl), ncol = 1)
+legend_data <- as.matrix(blur(as.im(legend_data), sigma=6))
+image(legend_data, col=AUC.colors, xlab="", 
+            ylab="", axes=F, useRaster = T)
+axis(1, at=seq(0.0,1,0.2), labels=seq(0.0,1,0.2), col.ticks = gray_colour, col = "white", pos = -1.5)
+mtext(side=1, "AUC", line=3)
+#image.plot( zlim=c(0,1.0), legend.only=TRUE, horizontal=TRUE,
+   #         col=AUC.colors, smallplot=c(.25,.8,0.7,.85), legend.lab = "AUC",
+    #        axis.args = c(col = "white", col.ticks = gray_colour, pos =0.),border = NA )
 
 dev.copy(pdf,"heat-plot.pdf",width=4.52,height=5.19)
 dev.off()
