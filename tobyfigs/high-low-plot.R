@@ -19,9 +19,10 @@ names(AUC_colors) <- seq(0,1,1/(nlevels-1))
 
 ## Load and select data to be displayed
 load("res.RData")
+res <- res[which(res$bandwidth==35),]
 res <- res[which(res$reporting_prob > 0.04),]
 rep_prob_lvls <- levels(as.factor(res$reporting_prob))[c(12,1)]
-neg_bin_k_lvls <- levels(as.factor(res$neg_bin_k))[c(5,1)]
+neg_bin_k_lvls <- levels(as.factor(res$neg_bin_k))[c(3,1)]
 inf_days_lvls <- levels(as.factor(res$infectious_days))[1]
 agg_days_lvls <- levels(as.factor(res$aggregation_days))[1]
 

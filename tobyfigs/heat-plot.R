@@ -25,6 +25,9 @@ dl <- seq(0,1,0.01)
 load("res.RData")
 res <- res[which(res$reporting_prob > 0.01),]
 
+##Filter for windowsize
+res <- filter(res, bandwidth == 100)
+
 ## Results for 7 day recovery
 res.7.wkly <- res[ which(res$infectious_days==7 
                          & res$aggregation_days == 7), ]
