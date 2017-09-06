@@ -157,7 +157,7 @@ while(r<runs)
 	{
 	//Reset initial conditions:
 	reset_initial_conditions(n, vaccine_uptake);
-	if(null_param == 1) vaccine_uptake = 0.5;
+	if(null_param == 1) vaccine_uptake = 0.0;
 	else vaccine_uptake = 0.0;
 	t = 0;
 	te = temin;
