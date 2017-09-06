@@ -18,10 +18,10 @@ get_ews <- function(df){
     return(
       as.data.frame(spaero::get_stats(x, center_trend ="local_constant",
                                       center_kernel = "uniform",
-                                      center_bandwidth =100, 
+                                      center_bandwidth =35, 
                                       stat_trend = "local_constant", 
                                       stat_kernel = "uniform",
-                                      stat_bandwidth=100, 
+                                      stat_bandwidth=35, 
                                       lag = 1)$stats)
     )
   }
