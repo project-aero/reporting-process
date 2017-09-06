@@ -5,6 +5,8 @@ library(colorspace)
 library(lattice)
 library(fields)
 library(dplyr)
+library(Hmisc)
+
 
 ## Eric's AUC gradient ##
 # Given error of ~0.5, set number of levels to 10.  For a higher precision, use nlevels = 20 
@@ -93,7 +95,9 @@ yLabs <- c("Mean", "Variance", "1st Diff. Var.",
 # For plotting
 nRepProb <- length(unique(res$reporting_prob))
 xVals <- seq(0,nRepProb-1)/(nRepProb-1)  # seq(0,20)/20
+xLabVals <- xVals[seq(1, length(xVals), 6)]
 xLabs <- round(unique(res$reporting_prob), 2)
+xLabsNew <- xLabs[seq(1, length(xLabs), 6)]
 yVals <- seq(2.5,50, by=5)/50
 
 addLines <- function(clr="white", lwd=1.5){
@@ -113,13 +117,10 @@ dispLabs3 <- function(){
   axis(4, at = seq(46.5,50, length.out = 3)/50, 
        labels = rep("", 3), tck=-.1, col.ticks = gray_colour,col = "white", pos = 1.05)
   mtext(side=4, "less dispersed", line=.95, las=1, cex=.6, at=1.05, xpd=T)
-  
   mtext(side=4, "100", line=3, las=1, cex=.4, at=1, xpd=T)
   mtext(side=4, " 1 ", line=3.1, las=1, cex=.4, at=.965, xpd=T)
   mtext(side=4, "0.01", line=3, las=1, cex=.4, at=.93, xpd=T)
-  
   mtext(side=4, "more dispersed", line=.91, las=1, cex=.6, at=.88, xpd=T)
-  
 }
 
 addLines3 <- function(clr="white", lwd=1.5){
@@ -154,7 +155,10 @@ par(oma=c(3,2,2,2), mar=c(1,5,3,3))
 image(H5, col=AUC.colors, xlab="", 
       ylab="", axes=F, main="",
       add.expr= abline(h=5/50, col="white"))
-axis(3, at=xVals, labels=xLabs, col.ticks = gray_colour, col = "white", pos = 1.03)
+axis(3, at=xLabVals, labels=xLabsNew, col.ticks = gray_colour, col = "white", pos = 1.03)
+axis(3, at=xVals, labels=FALSE, tck=-0.05, col.ticks = gray_colour, col = "white", pos = 1.03)
+#rug(x = xVals, side = 3,tck=-.005, col.ticks = gray_colour,  pos = 1.06)
+#minor.tick(nx=2, ny=0, tick.ratio=0.5) 
 axis(2, at=yVals, labels=yLabs, las=1, col.ticks = gray_colour, col = "white", pos = -0.05)
 mtext(side=3, text="Aggregated weekly", line=3)
 mtext(side=2, expression(paste(gamma, "=1/7")), line=5.5)
@@ -167,7 +171,8 @@ dispLabs3()
 par(mar=c(1,4,3,4))
 image(H6, col=AUC.colors, xlab="", 
       ylab="", axes=F)
-axis(3, at=xVals, labels=xLabs, col.ticks = gray_colour,col = "white", pos = 1.03)
+axis(3, at=xLabVals, labels=xLabsNew, col.ticks = gray_colour, col = "white", pos = 1.03)
+axis(3, at=xVals, labels=FALSE, tck=-0.05, col.ticks = gray_colour, col = "white", pos = 1.03)
 mtext(side=3, text="Aggregated monthly", line=3)
 axis(4, at=yVals, labels=yLabs, las=1, col.ticks = gray_colour, col = "white", pos =  1.05)
 addLines3()
@@ -178,7 +183,8 @@ axis(2, at = seq(46.5,50,length.out = 3)/50,
 par(mar=c(4,5,0,3))
 image(H7, col=AUC.colors, xlab="", 
       ylab="", axes=F)
-axis(1, at=xVals, labels=xLabs, col.ticks = gray_colour, col = "white",pos = -0.03)
+axis(1, at=xLabVals, labels=xLabsNew, col.ticks = gray_colour, col = "white", pos = -0.03)
+axis(1, at=xVals, labels=FALSE, tck=-0.05, col.ticks = gray_colour, col = "white", pos = -0.03)
 axis(2, at=yVals, labels=yLabs, las=1, col.ticks = gray_colour, col = "white",pos = -0.05)
 mtext(side=2, expression(paste(gamma, "=1/30")), line=5.5)
 mtext(side=1, "Reporting probability", line=3)
@@ -190,7 +196,8 @@ dispLabs3()
 par(mar=c(4,4,0,4))
 image(H8, col=AUC.colors, xlab="", 
       ylab="", axes=F)
-axis(1, at=xVals, labels=xLabs, col.ticks = gray_colour, col = "white", pos = -0.03)
+axis(1, at=xLabVals, labels=xLabsNew, col.ticks = gray_colour, col = "white", pos = -0.03)
+axis(1, at=xVals, labels=FALSE, tck=-0.05, col.ticks = gray_colour, col = "white", pos = -0.03)
 axis(4, at=yVals, labels=yLabs, las=1, col.ticks = gray_colour, col = "white", pos = 1.05)
 mtext(side=1, "Reporting probability", line=3)
 addLines3()
