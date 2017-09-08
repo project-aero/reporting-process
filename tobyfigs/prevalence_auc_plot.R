@@ -5,7 +5,7 @@ library(tidyverse)
 library(reshape2)
 library(colorspace)
 
-auc_data <- read.csv("prevalence_auc.csv")
+auc_data <- read.csv("prevalence_auc_35.csv")
 auc_data$`Infectious period` <- as.factor(auc_data$Infectious.period)
 levels(auc_data$`Infectious period`) <- c(expression(paste(gamma, "=1/30")),expression(paste(gamma, "=1/7")))
 
