@@ -30,6 +30,7 @@ usePackage("reshape")
 usePackage("magick") # for conversion of vector plots to bitmap images
 usePackage("magrittr")
 usePackage("data.tree") # to document project folder structure
+usePackage("latex2exp")
 
 # ensure custom spaero (version 0.2.0.9000) installed and loaded
 if(require(spaero)) detach(package:spaero)
@@ -67,244 +68,183 @@ fileStructure
 ```
 
 
-# Summary of senarios:
-  
-recovery rate = {1/7, 1/30} per day  
-reporting probability $\rho$ = 2 ^ seq(from = -8, to = 0, length = 21)  
-neg. binomial dispersion = {0.01, 0.1, 1, 10, 100}  
-number of days for each case report = {7, 30, 365}  
-
-2 \* 21 \* 5 \* 3 = 630 unique combinations
-
-reporting_prob $\rho$:  
-  - 2 ^ seq(from = -8, to = 0, length = 21)  
-dispersion_parameter (high value reduces dispersion):  
-  - .01 to 100 (high to low dispersion)  
-
 # Run Simulations
 
-```{r echo=FALSE}
-# Random Number Generator state recall in a robust, portable way, for reproducibility
-
-# Restore random number generator state from file
-load("./data/RNGdata20170602_163629.Rdata")
-RNGversion(RNGversion) # enforces RNG version
-do.call("RNGkind",as.list(RNGkind)) # enforces RNG kind
-.Random.seed <- RNGseed # restore seed to global environment
-
-# simulation parameters
-observation_days = 20 * 365
-sampling_interval <- 1 # simulation sampling interval in days
-population_size = 1e6
-host_lifetime <- 70 * 365
-infectious_days <- 7  # infectious period in days
-external_forcing = 1 / 7
-
-gamma <- 1/infectious_days
-d <- 1/host_lifetime
-
-# do single simulation
-sim.7di <- sample_process(observation_days = observation_days,
-                          sampling_interval = sampling_interval,
-                          population_size = population_size,
-                          host_lifetime = host_lifetime,
-                          infectious_days  = infectious_days,
-                          external_forcing = external_forcing)
-
-# Data must be coerced to a time series first, setting start time to the minimum time in dataframe (0 in this case), otherwise aggregate.ts() will coerce the data to a time series starting at time 1.  
-sim.7di.cases <- ts(sim.7di$cases, start = sim.7di$time[1])  
-
-# extract caselist (under perfect reporting) (flows from I to S))
-caselist <- sim.7di[rep(seq(nrow(sim.7di)), sim.7di$cases), c("time", "cases")]
-caselist$cases <- caselist$cases != 0
-
-# extract list of transmissions (flows from S to I)
-transmissionlist <- sim.7di[rep(seq(nrow(sim.7di)), sim.7di$transmissions), c("time", "transmissions")]
-transmissionlist$transmissions <- transmissionlist$transmissions != 0
-rownames(transmissionlist) <- NULL
-transmissionlist$ID <- as.integer(rownames(transmissionlist))
-
-# extract list of deaths of I
-deathlist <- sim.7di[rep(seq(nrow(sim.7di)), sim.7di$deathsI), c("time", "deathsI")]
-deathlist$deathsI <- deathlist$deathsI != 0
-
-# # verify crit_threshold occurs at end of time series
-# Beta <- 0  # from params argument of pomp simulator.  find it and decalre explicitely
-# epidemic_threshold <- sim.7di$time[(sim.7di$beta+Beta)*population_size==gamma+d]
-# epidemic_threshold==max(sim.7di$time)
-
-# merged list of deaths of I (I --> death) and "cases" (I --> R)
-caseanddeathlist <- merge(caselist,deathlist,all=TRUE) # renumbered
-
-# # Perfect Reporting: no dispersion and all cases aggregated.  use aggregate.ts() DELETE THIS SECTION
-# 
-#     ## aggregate reports ( 7 day reporting period)
-#     tau <- 7  # reporting interval in days
-#     tmp.ts <- aggregate.ts(sim.7di.cases, # changed from sim.7di$cases
-#                                             nfrequency=1 / (tau/sampling_interval)
-#                                             )
-#     reports.7di.7dr.perfect <- tmp.ts # for backwards compatibility
-#     reports.7di.7dr <- merge.zoo(perfect = zoo(tmp.ts), tmp = zoo(tmp.ts*0))
-#     
-#     ## aggregate reports ( 30 day reporting period)
-#     tau <- 30  # reporting interval in days
-#     tmp.ts <- aggregate.ts(sim.7di.cases, # changed from sim.7di$cases
-#                                             nfrequency=1 / (tau/sampling_interval)
-#                                             )
-#     reports.7di.30dr.perfect <- tmp.ts # for backwards compatibility
-#     reports.7di.30dr <- merge.zoo(perfect = zoo(tmp.ts), tmp = zoo(tmp.ts*0))
-# 
-# # Imperfect Reports: DELETE THIS SECTION
-#     
-# reporting_prob <- 0.125
-# dispersion_parameter <- 1
-# 
-#     ## aggregate reports ( 7 day reporting period)
-#     tau <- 7  # reporting interval in days
-#     reports.7di.7dr.imperfect <- sample_observation(sim.7di.cases,
-#                                                     sampling_interval = sampling_interval,
-#                                                     tau = tau,
-#                                                     reporting_prob = reporting_prob,
-#                                                     dispersion_parameter = dispersion_parameter)
-#     
-#     ## aggregate reports ( 30 day reporting period)
-#     tau <- 30  # reporting interval in days
-#     reports.7di.30dr.imperfect <- sample_observation(sim.7di.cases,
-#                                                     sampling_interval = sampling_interval,
-#                                                     tau = tau,
-#                                                     reporting_prob = reporting_prob,
-#                                                     dispersion_parameter = dispersion_parameter)
-#     
-
-
-# Reporting: 7 day
-    ## init nested dataframe (using tidyr definition of nested dataframe)
-    reports.7di.7dr <- list(rho=NA,disp=NA,data=list(NULL))
-    attr(reports.7di.7dr, "row.names") <- 1L
-    class(reports.7di.7dr) <- c("tbl_df", "data.frame")
-    tau <- 7  # reporting interval in days
-    
-    # Perfect Reporting: no dispersion and all cases aggregated.  use aggregate.ts()
-    reporting_prob <- 1
-    dispersion_parameter <- NA
-    tmp.ts <- aggregate.ts(sim.7di.cases,
-                           nfrequency=1 / (tau/sampling_interval)
-                           )
-    reports.7di.7dr[1,] <- list(rho=reporting_prob,disp=dispersion_parameter,data=list(zoo(tmp.ts)))
-    
-    ## Imperfect Reporting: with range of reporting probabilities and dispersion parameter values
-    reporting_prob <- 2^seq(from = 0, to = -8, by = -1)
-    dispersion_parameter <- 10^seq(2, -2, by = -1)
-    
-    for(r in 1:length(reporting_prob)){
-      for(d in 1:length(dispersion_parameter)){
-        i <- nrow(reports.7di.7dr)+1
-        tmp.ts <- sample_observation(sim.7di.cases,
-                                    sampling_interval = sampling_interval,
-                                    tau = tau,
-                                    reporting_prob = reporting_prob[r],
-                                    dispersion_parameter = dispersion_parameter[d])
-        reports.7di.7dr[i,] <- list(rho=reporting_prob[r],disp=dispersion_parameter[d],data=list(zoo(tmp.ts)))
-          }
-    }
-
-
-# Reporting: 30 day
-    ## init nested dataframe (using tidyr definition of nested dataframe)
-    reports.7di.30dr <- list(rho=NA,disp=NA,data=list(NULL))
-    attr(reports.7di.30dr, "row.names") <- 1L
-    class(reports.7di.30dr) <- c("tbl_df", "data.frame")
-    tau <- 30  # reporting interval in days
-    
-    # Perfect Reporting: no dispersion and all cases aggregated.  use aggregate.ts()
-    reporting_prob <- 1
-    dispersion_parameter <- NA
-    tmp.ts <- aggregate.ts(sim.7di.cases,
-                           nfrequency=1 / (tau/sampling_interval)
-                           )
-    reports.7di.30dr[1,] <- list(rho=reporting_prob,disp=dispersion_parameter,data=list(zoo(tmp.ts)))
-    
-    ## Imperfect Reporting: with range of reporting probabilities and dispersion parameter values
-    reporting_prob <- 2^seq(from = 0, to = -8, by = -1)
-    dispersion_parameter <- 10^seq(2, -2, by = -1)
-    
-    for(r in 1:length(reporting_prob)){
-      for(d in 1:length(dispersion_parameter)){
-        i <- nrow(reports.7di.30dr)+1
-        tmp.ts <- sample_observation(sim.7di.cases,
-                                    sampling_interval = sampling_interval,
-                                    tau = tau,
-                                    reporting_prob = reporting_prob[r],
-                                    dispersion_parameter = dispersion_parameter[d])
-        reports.7di.30dr[i,] <- list(rho=reporting_prob[r],disp=dispersion_parameter[d],data=list(zoo(tmp.ts)))
-          }
-    }
-
-    # Get stats - check code
-    
-    get_stats(sim.7di$I,
-              center_trend="",
-              center_kernel="uniform",
-              center_bandwidth = ,
-              stat_trend = "local_constant",
-              stat_kernel = ,
-              stat_bandwidth = ,
-              lag = )
-
+```{r echo=TRUE}
+source("simulation.R")
 ```
+
+# Summary of Scenarios:
+  
+recovery rate = {1/7, 1/30} per day # only 1/7 used
+reporting probability $\rho$ = 2 ^ seq(from = -8, to = 0, length = 21)  
+neg. binomial dispersion $\phi$ = {0.01, 0.1, 1, 10, 100}  
+aggregation perdiod (days) = {7, 30}  
+bandwidth = {35, 100}
+
+$2*21*5*2*2 = 840 \text{ unique combinations}$
+
+without  varying recovery rate:  
+$21*5*2*2 = 420 \text{ unique combinations}$
+
+
+
+# Simulation parameters
+
+```{r echo=FALSE}
+load("./output/data/sim_params.Rda")
+sim_params
+```
+
 
 
 # Fig. 1: Overview (reporting probablility and dispersion)
 
 ```{r eval=FALSE, warning=FALSE, results='hide'}
 # Data
-  
-imperfect <- with(reports.7di.30dr, data[rho==0.125 & disp==1])[[1]]
-  
+  load("./output/data/sim.7di.I.Rda")
+  load("./output/data/reports.7di.Rda")
+
 # Set plotting window
-plotxmin <- 10*365 # days
-plotxlength <-  10*365 # days
+plotxmin <- 10*365  # days
+plotxlength <-  10*365  # days
 plotxmax <- plotxmin+plotxlength # days
 
 plotymin <- 0
 plotymax <- max(
-  window(imperfect,start=plotxmin,end=plotxmax),
+  window(subset(reports.7di, tau==7 & bandwidth==35 & rho==2^-3.2 & disp==100)$data[[1]],start=plotxmin,end=plotxmax),
+  window(subset(reports.7di, tau==30 & bandwidth==35 & rho==2^-3.2 & disp==1)$data[[1]],start=plotxmin,end=plotxmax),
   window(sim.7di$I,start=plotxmin,end=plotxmax)
   )
 
 # Y ticks
-y.tick.interval <- 10
+y.tick.interval <- 10 
 y.ticks <- seq(from = plotymin, to = plotymax, by = y.tick.interval)
 
+# Y ticks
+top.y.ticks <- seq(-.5,1,.5)
+
 # Visual Variables
-color.7day <- rgb(0,0,1,.75)
-color.30day.imperfect <- rgb(1,0,0,0.85)
+## Colors
+color.7day <- unipalette['blue']
+color.7day.imperfect <- unipalette['pink']
+color.30day.imperfect <- unipalette['red']
 color.I <- rgb(0,0,0,.35)
-color.crit <- rgb(0,.5,0,.75)
+color.crit <- unipalette['green']
+color.ac.I <- unipalette['black']
+color.ac.I.lag1 <- unipalette['black']
+color.ac.I.lag7 <-  unipalette['blue']
+color.ac.I.lag30 <- unipalette['red']
+color.ac.snap7 <- unipalette['lightblue'] 
+color.ac.snap30 <- unipalette['pink']
+
+# Line types
 lty.7day <- "dotted" # for vertical dividers
 lty.30day <- "dashed" # for vertical dividers
 lty.crit <- "dashed" # for verticals
-lwd.7day <- .25
+lwd.7day <- .5
 lwd.30day <- 1.5
-lwd.I <- 1
+lwd.I <- .5
 lwd.crit <- 4
+
+# Margins and Figure Bounds
+margins = c(4,5,1,9.5)+0.1
+top.pannel <- c(0,1,.45,1) # panel bounds: x0,x1,y0,y1 as fraction of figure region
+bottom.pannel <- c(0,1,0,.55) # panel bounds: x0,x1,y0,y1 as fraction of figure region
 
 # PDF output
 pdf(
   file = "./output/plots/fig1.pdf",
   title = "Figure 1",
-  width = 7.25, height=4
+  width = 7.25, height=6
   )
 
-# init plot
-par(mar=c(4,5,1,8)+0.1)
+# Top Panel
+
+## Initialize plot of stats
+par(mar=margins)
 par(lend="butt")
+par(fig=top.pannel)
+plot(0,0, type='n', axes=FALSE, ann=FALSE, yaxt="n",
+     xlim=c(plotxmin,plotxmax), ylim=range(top.y.ticks))
+
+## I, lag 1
+lines(subset(sim.7di.I,interval==1 & bandwidth==35 & lag==1)$stats[[1]]$autocorrelation,
+      col=color.ac.I.lag1, lwd=lwd.I)
+
+## weekly snapshots of I, lag 1
+lines(subset(sim.7di.I, interval==7 & bandwidth==35 & lag==1)$stats[[1]]$autocorrelation,
+      col=color.ac.snap7, lwd=lwd.I)
+
+## weekly reports
+lines(subset(reports.7di, tau==7 & bandwidth==35 & rho==2^-3.2 & disp==100)$stats[[1]]$autocorrelation,
+      col=color.7day.imperfect, lwd=lwd.7day)
+
+## monthly reports
+lines(subset(reports.7di, tau==30 & bandwidth==35 & rho==2^-3.2 & disp==1)$stats[[1]]$autocorrelation,
+      col=color.30day.imperfect, lwd=lwd.30day)
+
+## grid
+abline(h=top.y.ticks,col='grey')
+title(ylab="Autocorrelation", line = 3)
+
+# plot critical threshold
+abline(
+  v=20*365, col=color.crit, lty=lty.crit, lwd = lwd.crit
+)
+
+# Axes
+
+axis(side = 2, # 1 specifies left axis
+           at = top.y.ticks, # tick locations (in data units).
+           labels = top.y.ticks, # vector of tick labels
+           las = 1, # label orientation (0:parall., 1:horiz., 2:perp., 3:vert.)
+           tcl = -.5, # tick length (fraction of plot width, neg to draw outside plot)
+           line = .5, # axis position, in units of x data
+           lty = "solid",
+           lwd = 0, # axis line weight
+           lwd.ticks = 1, # tick line weight
+           col = "grey" # axis line color
+           # col.ticks = NULL, # tick line color
+        )
+
+legend("topleft", xpd=NA, inset=c(1.01,0), xjust=0, yjust=0, cex=.65, y.intersp = 3,
+       legend=c(
+         TeX(sprintf("Number Infected, $\\tau = $ %.2f", 
+                     subset(sim.7di.I, interval==1 & bandwidth==35 & lag==1)$taus[[1]]$autocorrelation)),
+         TeX(sprintf("Weekly Snapshots\nof Number Infected, $\\tau = $ %.2f", 
+                     subset(sim.7di.I, interval==7 & bandwidth==35 & lag==1)$taus[[1]]$autocorrelation)),
+         TeX(sprintf("Weekly Reports, $\\tau = $ %.2f", 
+                     subset(reports.7di, tau==7 & bandwidth==35 & rho==2^-3.2 & disp==100)$taus[[1]]$autocorrelation)),
+         TeX(sprintf("Monthly Reports, $\\tau = $ %.2f", 
+                     subset(reports.7di, tau==30 & bandwidth==35 & rho==2^-3.2 & disp==1)$taus[[1]]$autocorrelation))
+       ),
+       col=c(
+         color.ac.I.lag1,
+         color.ac.snap7,
+         color.7day.imperfect,
+         color.30day.imperfect
+         ),
+       lwd=c(lwd.I,lwd.I,lwd.7day,lwd.30day),
+       lty=1,
+       bty='n')
+
+## Bottom Panel
+
+# init plot
+par(mar=margins)
+par(lend="butt")
+par(fig=bottom.pannel, new=TRUE)
 
 plot(0,0, type='n', axes=FALSE, ann=FALSE, yaxt="n",
      xlim=c(plotxmin,plotxmax), ylim=c(plotymin,plotymax))
 
 # plot time series of cases, aggregated monthly (imperfect reporting)
-lines(imperfect, type='s', pch=20, lwd=lwd.30day, col=color.30day.imperfect)
+lines(subset(reports.7di, tau==7 & bandwidth==35 & rho==2^-3.2 & disp==100)$data[[1]], 
+      type='s', pch=20, lwd=lwd.7day, col=color.7day.imperfect)
+lines(subset(reports.7di, tau==30 & bandwidth==35 & rho==2^-3.2 & disp==1)$data[[1]], 
+      type='s', pch=20, lwd=lwd.30day, col=color.30day.imperfect)
+
 
 # plot time series of number of infected
 poly <- sim.7di$I
@@ -356,18 +296,18 @@ abline(
 
 
 # annotations
-title(ylab = "Number", line = 4)
+title(ylab = "Number", line = 3)
 title(xlab="Year", line = 2.5)
 
 text(365*20, plotymax, xpd=NA, labels="epidemic threshold", adj=c(1,1.5), srt=90, col=color.crit)
 
 # Legend
 par(lend="butt")
-legend("topright", xpd=NA, inset=c(-0.35,0), xjust=0, yjust=0, cex=.75, y.intersp = 1.5,
-       legend=c("number infected", "case reports"),
-       col=c(color.I,color.30day.imperfect),
+legend("topleft", xpd=NA, inset=c(1.01,0), xjust=0, yjust=0, cex=.65, y.intersp = 1.5,
+       legend=c("Number Infected", "Weekly Reports", "Monthly Reports"),
+       col=c(color.I,color.7day.imperfect, color.30day.imperfect),
        lty=1,
-       lwd=c(9,1.5),
+       lwd=c(9,lwd.7day,lwd.30day),
        bty='n')
 
 # close PDF
@@ -379,8 +319,11 @@ targetfmt <- "png"
 pdf <- image_read(path, density = "300x300")
 png <- image_convert(pdf, format=targetfmt, depth=8)
 image_write(png, path = paste0(path,".", format=targetfmt), format = targetfmt)
+
+
 ```
-![Figure 1. Simulated epidemic approaching epidemic threshold (grey) and simulated monthly case reporting (red). Average infectious period = 7 days.  Aggregation period = 30 days.  Error arises from a) mismatch between infectious period and aggregation period, and b) and reporting error (such as unreported cases and false positives).  In this simulation, reporting probability = 0.125 and the dispersion parameter of the negative binomial = 1.](./output/plots/fig1.pdf.png)
+![Simulated epidemic approaching the epidemic threshold. The bottom panel shows the true number of infected in grey, weekly aggregated case reports in light red and monthly (30 day) aggregated case reports in dark red. Case reports are subject to negative binomially distributed reporting error, with reporting probability $\rho = 0.1088$ and dispersion parameter $\phi = 100$ for weekly reports and $\phi = 1$ (further details in methods section). Transmission dynamics are modeled using the SIR model with birth and death with average population size $N_0 = 10^6$, importation rate $\zeta = 1$ case per week, mean life expectancy 70 years, and mean infectious period 1 week. $R_0$ increases from 0 to 1 over 20 years. Simulations performed using the Gillespie algorithm. The top panel shows the lag 1 autocorrelation calculated using a centered moving window from various different time series data sets, as indicated in the figure. Changing the data changes not only the values of the autocorrelation, but also the trend, quantified using Kendall's $\tau$. The moving window average is calculated using a bandwidth $b = 35$, for details see the methods section.](./output/plots/fig1.pdf.png)
+
 
 
 # Fig 2.  Aggregation process and aggregation-based mismatch
@@ -490,8 +433,9 @@ plotxmax <- plotxmin+plotxlength # days
 ## About Devices: Plot is made to the PDF device.  After the PDF device is closed, the figure is read in as an image and converted  to PNG.
 
 # # PDF output
+path <- "./output/plots/fig2_v1.pdf"
 pdf(
-  file = "./output/plots/fig2.pdf",
+  file = path,
   title = "Figure 2",
   width = 7, height=7
   )
@@ -598,7 +542,6 @@ text(x=plotxmax, y = 45, "monthly", las=1, adj=1, col=rgb(0,0,1,.5))
 dev.off()
 
 ## convert figure from PDF to PNG
-path <- "./output/plots/fig2.pdf"
 targetfmt <- "png"
 pdf <- image_read(path, density = "300x300")
 png <- image_convert(pdf, format=targetfmt, depth=8)
@@ -611,16 +554,42 @@ image_write(png, path = paste0(path,".", format=targetfmt), format = targetfmt)
   
 ```{r eval=FALSE, warning=FALSE, results='hide'}
 # Data
-  
-reports.7di.30dr.perfect <- with(reports.7di.30dr, data[rho==1 & is.na(disp)])[[1]]
-reports.7di.7dr.perfect <- with(reports.7di.7dr, data[rho==1 & is.na(disp)])[[1]]
+  load("./output/data/sim.7di.Rda")
+  load("./output/data/sim.7di.I.Rda")
+  load("./output/data/reports.7di.Rda")
+  load("./output/data/sim_params.Rda")
+  load("./output/data/analysis_params.Rda")
 
+  reports.7di.30dr.perfect <- subset(reports.7di, tau==30 & bandwidth==35 & rho==1 & is.na(disp))$data[[1]]
+  reports.7di.7dr.perfect <- subset(reports.7di, tau==7 & bandwidth==35 & rho==1 & is.na(disp))$data[[1]]
+  
+  ## Data must be coerced to a time series first, setting start time to the minimum time in dataframe (0 in this case), 
+  ## otherwise aggregate.ts() will coerce the data to a time series starting at time 1.  
+  sim.7di.cases <- ts(sim.7di$cases, start = sim.7di$time[1])  
+  
+  # extract caselist (under perfect reporting) (flows from I to S))
+  caselist <- sim.7di[rep(seq(nrow(sim.7di)), sim.7di$cases), c("time", "cases")]
+  caselist$cases <- caselist$cases != 0
+  
+  # extract list of transmissions (flows from S to I)
+  transmissionlist <- sim.7di[rep(seq(nrow(sim.7di)), sim.7di$transmissions), c("time", "transmissions")]
+  transmissionlist$transmissions <- transmissionlist$transmissions != 0
+  rownames(transmissionlist) <- NULL
+  transmissionlist$ID <- as.integer(rownames(transmissionlist))
+  
+  # extract list of deaths of I
+  deathlist <- sim.7di[rep(seq(nrow(sim.7di)), sim.7di$deathsI), c("time", "deathsI")]
+  deathlist$deathsI <- deathlist$deathsI != 0
+  
+  # merged list of deaths of I (I --> death) and "cases" (I --> R)
+  caseanddeathlist <- merge(caselist,deathlist,all=TRUE) # renumbered
+  
 # Set plotting window (days)
 plotxmin <- 7*870 # days  7*52*18  Week 870
 plotxlength <- 7*12 # days # 180
 plotxmax <- plotxmin+plotxlength # days
-windows.7day <- (7*0:(observation_days/7))-.0  # no shift
-windows.30day <- (30*0:(observation_days/30))-.0  # no shift
+windows.7day <- (7*0:(sim_params$observation_days/7))-.0  # no shift
+windows.30day <- (30*0:(sim_params$observation_days/30))-.0  # no shift
 
 # Top panel y limits
 plotymin <- 0
@@ -642,9 +611,9 @@ top.y.tick.interval <- 10
 top.y.ticks <- top.y.tick.interval*seq(from = 0, to = ceiling(plotymax/top.y.tick.interval), by = 1)
 
 ## Visual Variables
-color.7day <- rgb(0,0,1,.5)
-color.30day <- rgb(1,0,0,.5)
-color.I <- 'black'
+color.7day <- unipalette['lightblue']
+color.30day <- unipalette['red']
+color.I <- unipalette['black']
 lty.7day <- "dotted" # for vertical dividers
 lty.30day <- "dashed" # for vertical dividers
 lwd.7day <- 1.5
@@ -657,8 +626,9 @@ dividers.30day <- list(v=windows.30day, col=color.30day, lty=lty.30day, lwd=lwd.
 
 ## About Devices: Plot is made to the PDF device.  After the PDF device is closed, the figure is read in as an image and converted  to PNG.
 # # PDF output
+path <- "./output/plots/fig2.pdf"
 pdf(
-  file = "./output/plots/fig2_v2.pdf",
+  file = path,
   title = "Figure 2 (version 2)",
   width = 5.25, height=6
   )
@@ -685,7 +655,7 @@ for(i in 1:length(transmissionlist$time)){
     id <- tmp_transmissionlist$ID[onsetindex]
     xstart <- tmp_transmissionlist$time[onsetindex]
     # recovery, death or end of obs period:
-    xend <- ifelse(!is.na(caseanddeathlist$time[i]),caseanddeathlist$time[i],observation_days) 
+    xend <- ifelse(!is.na(caseanddeathlist$time[i]),caseanddeathlist$time[i],sim_params$observation_days) 
     
     # draw segment
     segments(
@@ -718,9 +688,12 @@ axis(side = 1, # 1 specifies bottom axis - minor ticks
            col = "grey" # axis line color
            # col.ticks = NULL, # tick line color
         )
+
+tmp.at <- seq(plotxmin,plotxmax+7,28)
+tmp.lab <- (tmp.at-plotxmin)/7
 axis(side = 1, # 1 specifies bottom axis - major ticks
-           at = seq(plotxmin,plotxmax+7,28), # tick locations (in data units).
-           labels = seq(plotxmin,plotxmax+7,28)/7,
+           at = tmp.at, # tick locations (in data units).
+           labels = tmp.lab,
            tcl = -1, # tick length (fraction of plot width, neg to draw outside plot)
            line = .5, # number of lines into margin at which axis is drawn 
            lty = "solid",
@@ -729,9 +702,11 @@ axis(side = 1, # 1 specifies bottom axis - major ticks
            col = "grey" # axis line color
            # col.ticks = NULL, # tick line color
         )
+tmp.at <- seq(min.transmissionID,max.transmissionID,20)
+tmp.lab <- tmp.at - min.transmissionID
 axis(side = 2, # 1 specifies left axis
-           at = seq(min.transmissionID,max.transmissionID,20), # tick locations (in data units).
-           labels = seq(min.transmissionID,max.transmissionID,20), # vector of tick labels
+           at = tmp.at, # tick locations (in data units).
+           labels = tmp.lab, # vector of tick labels
            las = 1, # label orientation (0:parall., 1:horiz., 2:perp., 3:vert.)
            tcl = -.5, # tick length (fraction of plot width, neg to draw outside plot)
            line = .5, # number of lines into margin at which axis is drawn 
@@ -804,7 +779,6 @@ legend("topright", xpd=NA, inset=c(-0.5,0), xjust=0, yjust=0, cex=.75, y.intersp
 invisible(dev.off())
 
 ## convert figure from PDF to PNG
-path <- "./output/plots/fig2_v2.pdf"
 targetfmt <- "png"
 pdf <- image_read(path, density = "300x300")
 png <- image_convert(pdf, format=targetfmt, depth=8)
@@ -812,15 +786,28 @@ image_write(png, path = paste0(path,".", format=targetfmt), format = targetfmt)
 
 ```
 
-![Figure 2. Example of aggregation process and agregation-based mismatch.  Illustration of the aggregation of case reports for a disease with average infectious period of 7 days.  In the lower panel, each black line segment represents the infectious period of a simulated individual, from onset of infection to recovery.  Each black dot represents a case report, which in this simulation corresponds to recovery of the individual ($I \rightarrow R$ transitions).  Dotted blue verticals delineate one-week reporting windows; dashed red verticals delineate 30-day reporting windows.  Counting the number of segments present at any given time gives the true number of infected, plotted as a black trace in the upper plot.  Counting the number of dots in a given window gives the number of case reports for that window, plotted as blue (7-day) and red (30-day) traces in the upper plot.](./output/plots/fig2_v2.pdf.png)
+![Figure 2. Example of aggregation process and agregation-based mismatch.  Illustration of the aggregation of case reports for a disease with average infectious period of 7 days.  In the lower panel, each black line segment represents the infectious period of a simulated individual, from onset of infection to recovery.  Each black dot represents a case report, which in this simulation corresponds to recovery of the individual ($I \rightarrow R$ transitions).  Dotted blue verticals delineate one-week reporting windows; dashed red verticals delineate 30-day reporting windows.  Counting the number of segments present at any given time gives the true number of infected, plotted as a black trace in the upper plot.  Counting the number of dots in a given window gives the number of case reports for that window, plotted as blue (7-day) and red (30-day) traces in the upper plot.](./output/plots/fig2.pdf.png)
 
 # Fig. 3: Example of reporting error
 
-```{r eval=FALSE, warning=FALSE, results='hide'}
-# Data
+## Single Panel
 
-reports.7di.7dr.perfect <- with(reports.7di.7dr, data[rho==1 & is.na(disp)])[[1]]
-reports.7di.7dr.imperfect <- with(reports.7di.7dr, data[rho==0.125 & disp==0.1])[[1]]
+```{r eval=FALSE, warning=FALSE, results='hide'}
+
+# Data
+  load("./output/data/sim.7di.Rda")
+  load("./output/data/sim.7di.I.Rda")
+  load("./output/data/reports.7di.Rda")
+  load("./output/data/sim_params.Rda")
+  load("./output/data/analysis_params.Rda")
+
+  # extract Case Reports
+  reports.7di.7dr.perfect <- subset(reports.7di, tau==7 & bandwidth==35 & rho==1 & is.na(disp))$data[[1]]
+  reports.7di.7dr.imperfect <- subset(reports.7di, tau==7 & bandwidth==35 & rho== .25 & disp==0.1)$data[[1]]
+
+  # extract autocorrelation
+  reports.7di.7dr.perfect.autocorrelation <- subset(reports.7di, tau==7 & bandwidth==35 & rho==1 & is.na(disp))$autocorrelation
+  reports.7di.7dr.imperfect.autocorrelation <- subset(reports.7di, tau==7 & bandwidth==35 & rho== .25 & disp==0.1)$autocorrelation
 
 # # Imperfect Reporting: rho = 0.125, low dispersion = .1  use sample_observations() and specify reporting prob and dispersion
 # reporting_prob <- 0.125
@@ -835,8 +822,6 @@ reports.7di.7dr.imperfect <- with(reports.7di.7dr, data[rho==0.125 & disp==0.1])
 #                                                     dispersion_parameter = dispersion_parameter)
     
 # Set plotting window
-# plotxmin <- 0 # days
-# plotxlength <-  max(sim.7di$time) # days
 plotxmin <- 7*960 # days
 plotxlength <-  7*30 # days
 
@@ -854,9 +839,9 @@ y.tick.interval <- 10
 y.ticks <- seq(from = plotymin, to = plotymax, by = y.tick.interval)
 
 ## Visual Variables
-color.7day <- rgb(0,0,1,.75)
-color.7day.imperfect <- rgb(1,0,0,0.75)
-color.I <- 'black'
+color.7day <- unipalette['lightblue']
+color.7day.imperfect <- unipalette['red']
+color.I <- unipalette['black']
 lty.7day <- "dotted" # for vertical dividers
 lty.30day <- "dashed" # for vertical dividers
 lwd.7day <- 1.5
@@ -865,14 +850,15 @@ lwd.I <- 1
 
 ## About Devices: Plot is made to the PDF device.  After the PDF device is closed, the figure is read in as an image and converted  to PNG.
 # # PDF output
+path <- "./output/plots/fig3.pdf"
 pdf(
-  file = "./output/plots/fig3.pdf",
+  file = path,
   title = "Figure 3",
   width = 7.25, height=3
   )
 
 # init plot
-par(mar=c(4,5,1,7)+0.1)
+par(mar=c(4,5,1,7.5)+0.1)
 
 plot(0,0, type='n', axes=FALSE, ann=FALSE, yaxt="n",
      xlim=c(plotxmin,plotxmax), ylim=c(plotymin,plotymax))
@@ -899,9 +885,11 @@ axis(side = 1, # 1 specifies bottom axis - minor ticks
            col = "grey" # axis line color
            # col.ticks = NULL, # tick line color
         )
+tmp.at <- seq(plotxmin,plotxmax+7,28)
+tmp.lab <- (tmp.at-plotxmin)/7
 axis(side = 1, # 1 specifies bottom axis - major ticks
-           at = seq(plotxmin,plotxmax+7,28), # tick locations (in data units).
-           labels = seq(plotxmin,plotxmax+7,28)/7,
+           at = tmp.at, # tick locations (in data units).
+           labels = tmp.lab,
            tcl = -1, # tick length (fraction of plot width, neg to draw outside plot)
            line = .5, # number of lines into margin at which axis is drawn 
            lty = "solid",
@@ -934,13 +922,13 @@ abline(
 
 
 # annotations
-title(ylab = "Number", line = 4)
+title(ylab = "Number", line = 3)
 title(xlab="Week", line = 2.5)
 
 # Legend
 par(lend="butt")
-legend("topright", xpd=NA, inset=c(-0.25,0), xjust=0, yjust=0, cex=.75, y.intersp = 2.0,
-       legend=c("infected", "perfect\nreporting","imperfect\nreporting"),
+legend("topleft", xpd=NA, inset=c(1.01,0), xjust=0, yjust=0, cex=.65, y.intersp = 3.0,
+       legend=c("Number Infected", "Case Reports\n(Perfect Reporting)","Case Reports\n(Imperfect Reporting)"),
        col=c(color.I,color.7day,color.7day.imperfect),
        lwd=c(lwd.I,lwd.7day,lwd.7day),
        lty=1,
@@ -950,7 +938,173 @@ legend("topright", xpd=NA, inset=c(-0.25,0), xjust=0, yjust=0, cex=.75, y.inters
 invisible(dev.off())
 
 ## convert figure from PDF to PNG
-path <- "./output/plots/fig3.pdf"
+targetfmt <- "png"
+pdf <- image_read(path, density = "300x300")
+png <- image_convert(pdf, format=targetfmt, depth=8)
+image_write(png, path = paste0(path,".", format=targetfmt), format = targetfmt)
+
+```
+![Example of aggregated data with reporting error. Three time series for the same simulated outbreak are shown: the number of infected (black line), weekly aggregated case reports with no reporting error (perfect reporting, blue line) and weekly aggregated case reports with reporting error (imperfect reporting, red line). Reporting error is modelled using a negative binomial distribution with $\rho = 0.25$ and $\phi = 0.1$. The high overdispersion (small $\phi$) means that there is little visual correspondance between the number of case reports with and without reporting error. Additionally, the number of case reports can exceed the true number of cases (overreporting), in spite of the low reporting rate. SIR simulations performed using the same parameters are Fig.~\ref{fig:fig1}](./output/plots/fig3.pdf.png) 
+
+## 4 Panel
+
+```{r eval=FALSE, warning=FALSE, results='hide'}
+# Data
+
+reports.7di.7dr.perfect <- with(reports.7di.7dr, data[rho==1 & is.na(disp)])[[1]]
+reports.7di.7dr.hirho.hidisp <- with(reports.7di.7dr, data[rho==0.5 & disp==0.01])[[1]]
+reports.7di.7dr.hirho.lodisp <- with(reports.7di.7dr, data[rho==0.5 & disp==100])[[1]]
+reports.7di.7dr.lorho.hidisp <- with(reports.7di.7dr, data[rho==0.03125 & disp==0.01])[[1]]
+reports.7di.7dr.lorho.lodisp <- with(reports.7di.7dr, data[rho==0.03125 & disp==100])[[1]]
+
+# Set plotting window
+plotxmin <- 7*960 # days
+plotxlength <-  7*30 # days
+
+plotxmax <- plotxmin+plotxlength # days
+
+plotymin <- 0
+plotymax <- max(
+  window(reports.7di.7dr.perfect,start=plotxmin,end=plotxmax),
+  window(reports.7di.7dr.hirho.hidisp,start=plotxmin,end=plotxmax),
+  window(reports.7di.7dr.hirho.lodisp,start=plotxmin,end=plotxmax),
+  window(reports.7di.7dr.lorho.hidisp,start=plotxmin,end=plotxmax),
+  window(reports.7di.7dr.lorho.lodisp,start=plotxmin,end=plotxmax),
+  window(sim.7di$I,start=plotxmin,end=plotxmax)
+  )
+
+# Y ticks
+y.tick.interval <- 10
+y.ticks <- seq(from = plotymin, to = plotymax, by = y.tick.interval)
+
+## Visual Variables
+color.7day <- unipalette['lightblue']
+color.7day.imperfect <- unipalette['red']
+color.I <- unipalette['black']
+lty.7day <- "dotted" # for vertical dividers
+lty.30day <- "dashed" # for vertical dividers
+lwd.7day <- 1.5
+lwd.30day <- 3
+lwd.I <- 1
+
+## About Devices: Plot is made to the PDF device.  After the PDF device is closed, the figure is read in as an image and converted  to PNG.
+# # PDF output
+pdf(
+  file = "./output/plots/fig3_grid.pdf",
+  title = "Figure 3",
+  width = 7.25, height=4.5
+  )
+
+plot.margins <- c(4,4,1.5,3)+0.1
+par(mfrow=c(2,2))
+  
+# Hi Rho, Hi Disp
+par(mar=plot.margins)
+plot(0,0, type='n', axes=FALSE, ann=FALSE, yaxt="n",
+     xlim=c(plotxmin,plotxmax), ylim=c(plotymin,plotymax))
+lines(reports.7di.7dr.hirho.hidisp, type='s', pch=20, lwd=lwd.7day, col=color.7day.imperfect)
+lines(reports.7di.7dr.perfect, type='s', pch=20, lwd=lwd.7day, col=color.7day)
+lines(sim.7di$I, type='S', pch=20, lwd=lwd.I, col=color.I) # note: type="S" not "s"
+axis(side = 1, # 1 specifies bottom axis - minor ticks
+           at = seq(plotxmin-7,plotxmax+7,7), labels = FALSE, 
+           las = 1, tcl = -.5, line = .5, lty = "solid", lwd = 0, lwd.ticks = 1, col = "grey")
+tmp.at <- seq(plotxmin,plotxmax+7,28)
+tmp.lab <- (tmp.at-plotxmin)/7
+axis(side = 1, # 1 specifies bottom axis - major ticks
+           at = tmp.at, labels = tmp.lab,
+           tcl = -1, line = .5,  lty = "solid", lwd = 0, lwd.ticks = 1, col = "grey")
+axis(side = 2, # 1 specifies left axis
+           at = y.ticks, 
+           labels = y.ticks, 
+           las = 1, tcl = -.5, line = .5, lty = "solid", lwd = 0, lwd.ticks = 1, col = "grey")
+abline(h = y.ticks, col = rgb(0,0,0,.25), lty = 'solid', lwd = 1)
+title(ylab = "Number", line = 2.5)
+mtext(text = "High overdispersion", side=3, line=0.5)
+
+# Hi Rho, Lo Disp
+par(mar=plot.margins)
+plot(0,0, type='n', axes=FALSE, ann=FALSE, yaxt="n",
+     xlim=c(plotxmin,plotxmax), ylim=c(plotymin,plotymax))
+lines(reports.7di.7dr.hirho.lodisp, type='s', pch=20, lwd=lwd.7day, col=color.7day.imperfect)
+lines(reports.7di.7dr.perfect, type='s', pch=20, lwd=lwd.7day, col=color.7day)
+lines(sim.7di$I, type='S', pch=20, lwd=lwd.I, col=color.I) # note: type="S" not "s"
+axis(side = 1, # 1 specifies bottom axis - minor ticks
+           at = seq(plotxmin-7,plotxmax+7,7), labels = FALSE, 
+           las = 1, tcl = -.5, line = .5, lty = "solid", lwd = 0, lwd.ticks = 1, col = "grey")
+tmp.at <- seq(plotxmin,plotxmax+7,28)
+tmp.lab <- (tmp.at-plotxmin)/7
+axis(side = 1, # 1 specifies bottom axis - major ticks
+           at = tmp.at, labels = tmp.lab,
+           tcl = -1, line = .5,  lty = "solid", lwd = 0, lwd.ticks = 1, col = "grey")
+axis(side = 2, # 1 specifies left axis
+           at = y.ticks, 
+           labels = y.ticks, 
+           las = 1, tcl = -.5, line = .5, lty = "solid", lwd = 0, lwd.ticks = 1, col = "grey")
+abline(h = y.ticks, col = rgb(0,0,0,.25), lty = 'solid', lwd = 1)
+mtext(text = "Low overdispersion", side=3, line=0.5)
+mtext(text = "High reporting", side=4, line=1.5, srt=180)
+
+# Lo Rho, Hi Disp
+par(mar=plot.margins)
+plot(0,0, type='n', axes=FALSE, ann=FALSE, yaxt="n",
+     xlim=c(plotxmin,plotxmax), ylim=c(plotymin,plotymax))
+lines(reports.7di.7dr.lorho.hidisp, type='s', pch=20, lwd=lwd.7day, col=color.7day.imperfect)
+lines(reports.7di.7dr.perfect, type='s', pch=20, lwd=lwd.7day, col=color.7day)
+lines(sim.7di$I, type='S', pch=20, lwd=lwd.I, col=color.I) # note: type="S" not "s"
+axis(side = 1, # 1 specifies bottom axis - minor ticks
+           at = seq(plotxmin-7,plotxmax+7,7), labels = FALSE, 
+           las = 1, tcl = -.5, line = .5, lty = "solid", lwd = 0, lwd.ticks = 1, col = "grey")
+tmp.at <- seq(plotxmin,plotxmax+7,28)
+tmp.lab <- (tmp.at-plotxmin)/7
+axis(side = 1, # 1 specifies bottom axis - major ticks
+           at = tmp.at, labels = tmp.lab,
+           tcl = -1, line = .5,  lty = "solid", lwd = 0, lwd.ticks = 1, col = "grey")
+axis(side = 2, # 1 specifies left axis
+           at = y.ticks, 
+           labels = y.ticks, 
+           las = 1, tcl = -.5, line = .5, lty = "solid", lwd = 0, lwd.ticks = 1, col = "grey")
+abline(h = y.ticks, col = rgb(0,0,0,.25), lty = 'solid', lwd = 1)
+title(ylab = "Number", line = 2.5)
+title(xlab="Week", line = 2.5)
+
+# Lo Rho, Lo Disp
+par(mar=plot.margins)
+plot(0,0, type='n', axes=FALSE, ann=FALSE, yaxt="n",
+     xlim=c(plotxmin,plotxmax), ylim=c(plotymin,plotymax))
+lines(reports.7di.7dr.lorho.lodisp, type='s', pch=20, lwd=lwd.7day, col=color.7day.imperfect)
+lines(reports.7di.7dr.perfect, type='s', pch=20, lwd=lwd.7day, col=color.7day)
+lines(sim.7di$I, type='S', pch=20, lwd=lwd.I, col=color.I) # note: type="S" not "s"
+axis(side = 1, # 1 specifies bottom axis - minor ticks
+           at = seq(plotxmin-7,plotxmax+7,7), labels = FALSE, 
+           las = 1, tcl = -.5, line = .5, lty = "solid", lwd = 0, lwd.ticks = 1, col = "grey")
+tmp.at <- seq(plotxmin,plotxmax+7,28)
+tmp.lab <- (tmp.at-plotxmin)/7
+axis(side = 1, # 1 specifies bottom axis - major ticks
+           at = tmp.at, labels = tmp.lab,
+           tcl = -1, line = .5,  lty = "solid", lwd = 0, lwd.ticks = 1, col = "grey")
+axis(side = 2, # 1 specifies left axis
+           at = y.ticks, 
+           labels = y.ticks, 
+           las = 1, tcl = -.5, line = .5, lty = "solid", lwd = 0, lwd.ticks = 1, col = "grey")
+abline(h = y.ticks, col = rgb(0,0,0,.25), lty = 'solid', lwd = 1)
+title(xlab="Week", line = 2.5)
+mtext(text = "Low reporting", side=4, line=1.5, srt=0)
+
+
+# # Legend
+# par(lend="butt")
+# legend("topright", xpd=NA, inset=c(-0.25,0), xjust=0, yjust=0, cex=.75, y.intersp = 2.0,
+#        legend=c("infected", "perfect\nreporting","imperfect\nreporting"),
+#        col=c(color.I,color.7day,color.7day.imperfect),
+#        lwd=c(lwd.I,lwd.7day,lwd.7day),
+#        lty=1,
+#        bty='n')
+
+## Close PDF
+invisible(dev.off())
+
+## convert figure from PDF to PNG
+path <- "./output/plots/fig3_grid.pdf"
 targetfmt <- "png"
 pdf <- image_read(path, density = "300x300")
 png <- image_convert(pdf, format=targetfmt, depth=8)
@@ -959,5 +1113,6 @@ image_write(png, path = paste0(path,".", format=targetfmt), format = targetfmt)
 
 
 ```
-![Figure 3. Example of reporting error.  Simulation of an $SIR$ model with average infectious period of 7 days, showing abundance of the infected class $I$ (black trace), case reports aggregated weekly under "perfect reporting" conditions (blue trace), and imperfect conditions (red trace). Under "perfect" conditions, the reporting probability = 1.  Under imperfect conditions, reporting probability = 0.125 and the dipsersion parameter of the negative binomial is 0.1.](./output/plots/fig3.pdf.png) 
+![Figure 3. Example of reporting error under high/low reporting probability and high/low overdispersion scenarios. Each panel shows the abanduance of the infected class $I$ (black trace), case reports under perfect reporting (blue trace), and case reports under imperfect reporting (red trace). For high reporting $\rho = 0.5$ and for low reporting $\rho = 2^{-5}$. For high overdispersion $\phi = 0.01$, for low overdispersion $\phi = 100$. For all panels both the mean infectious period and aggregation period are 7 days.](./output/plots/fig3_grid.pdf.png) 
+
 

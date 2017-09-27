@@ -50,3 +50,39 @@ sample_observation <- function (cases, sampling_interval = 1, tau = 1, reporting
 #   n <- length(mu)
 #   rnbinom(n=n, mu=mu, size=dispersion_parameter)
 # }
+
+analysis <- function(data,params){
+  get_stats(
+    data,
+    center_trend = params$center_trend, 
+    stat_trend = params$stat_trend,
+    center_kernel = params$center_kernel, 
+    stat_kernel = params$stat_kernel,
+    center_bandwidth = params$center_bandwidth, 
+    stat_bandwidth = params$stat_bandwidth,
+    lag = params$lag)
+} 
+
+# Colors
+usePackage("colorspace")
+
+unipalette.lorder <- c(
+  "black"="#252525", # Nero (grey)
+  "purple"="#5e2b7b", # Blue Diamond (violet)
+  "red"="#a11c3e", # Fire Brick (red)
+  "blue"="#226e83",  # Allports (blue)
+  "green"="#319045", # Sea Green (green)
+  "lightblue"="#5798d1", # Picton Blue (blue)
+  "pink"="#e2908c" # Sea Pink (red)
+)
+unipalette <- unipalette.diff <- unipalette.lorder[c(3,6,1,5,2,7,4)]
+unipalette.hybrid <- unipalette.lorder[c(1,3,2,5,4,7,6)]
+
+AUC.colors <- diverge_hcl(
+  n = 20,  # number of colors
+  h = c(45, 225),  # Hues (low, hi)
+  c = 100, # fixed Chroma or Chroma Range (edges, center)
+  l = c(90, 10),  # Lightness range (edges, center) 
+  power = 1  # exponent
+)
+
