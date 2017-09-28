@@ -1,0 +1,19 @@
+#!/bin/bash
+
+set -e
+
+topd=$(pwd)
+tstamp=$(date +%Y-%m-%d_%H-%M-%S)
+wkdir="${topd}/work-${tstamp}"
+ddir="${topd}/data"
+sdir="${topd}/src"
+hdir="/home/docker"
+
+mkdir ${wkdir}
+chmod 757 ${wkdir}
+docker run -v ${ddir}:${hdir}/data:ro \
+       -v ${sdir}:${hdir}/src:ro \
+       -v ${wkdir}:${hdir}/work \
+       --user docker -w ${hdir}/work \
+       eamon/2016feasibility /bin/bash -c "make -f ../src/Makefile"
+chown -R $(id -u):$(id -g) ${wkdir}
