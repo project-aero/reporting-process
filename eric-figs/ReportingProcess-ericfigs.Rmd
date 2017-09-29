@@ -102,218 +102,260 @@ sim_params
 
 ```{r eval=FALSE, warning=FALSE, results='hide'}
 # Data
+
   load("./output/data/sim.7di.I.Rda")
   load("./output/data/reports.7di.Rda")
 
-# Set plotting window
-plotxmin <- 10*365  # days
-plotxlength <-  10*365  # days
-plotxmax <- plotxmin+plotxlength # days
-
-plotymin <- 0
-plotymax <- max(
-  window(subset(reports.7di, tau==7 & bandwidth==35 & rho==2^-3.2 & disp==100)$data[[1]],start=plotxmin,end=plotxmax),
-  window(subset(reports.7di, tau==30 & bandwidth==35 & rho==2^-3.2 & disp==1)$data[[1]],start=plotxmin,end=plotxmax),
-  window(sim.7di$I,start=plotxmin,end=plotxmax)
-  )
-
-# Y ticks
-y.tick.interval <- 10 
-y.ticks <- seq(from = plotymin, to = plotymax, by = y.tick.interval)
-
-# Y ticks
-top.y.ticks <- seq(-.5,1,.5)
+# Scales & Ranges
+  
+  ## Set plotting window
+  plotxmin <- 10*365  # days
+  plotxlength <-  10*365  # days
+  plotxmax <- plotxmin+plotxlength # days
+  
+  plotymin <- 0
+  plotymax <- max(
+    window(subset(reports.7di, tau==7 & bandwidth==35 & rho==2^-3.2 & disp==100)$data[[1]],start=plotxmin,end=plotxmax),
+    window(subset(reports.7di, tau==30 & bandwidth==35 & rho==2^-3.2 & disp==1)$data[[1]],start=plotxmin,end=plotxmax),
+    window(sim.7di$I,start=plotxmin,end=plotxmax)
+    )
+  
+  # Y ticks
+  y.tick.interval <- 10 
+  y.ticks <- seq(from = plotymin, to = plotymax, by = y.tick.interval)
+  
+  # Y ticks
+  top.y.ticks <- seq(-.5,1,.5)
 
 # Visual Variables
-## Colors
-color.7day <- unipalette['blue']
-color.7day.imperfect <- unipalette['pink']
-color.30day.imperfect <- unipalette['red']
-color.I <- rgb(0,0,0,.35)
-color.crit <- unipalette['green']
-color.ac.I <- unipalette['black']
-color.ac.I.lag1 <- unipalette['black']
-color.ac.I.lag7 <-  unipalette['blue']
-color.ac.I.lag30 <- unipalette['red']
-color.ac.snap7 <- unipalette['lightblue'] 
-color.ac.snap30 <- unipalette['pink']
-
-# Line types
-lty.7day <- "dotted" # for vertical dividers
-lty.30day <- "dashed" # for vertical dividers
-lty.crit <- "dashed" # for verticals
-lwd.7day <- .5
-lwd.30day <- 1.5
-lwd.I <- .5
-lwd.crit <- 4
+  
+  ## Colors - REVIEW
+  color.7day.snap <- unipalette['black']
+  color.7day.snap.fill <- rgb(0,0,0,.1)
+  color.7day.imperfect <- unipalette['pink']
+  color.30day.imperfect <- unipalette['red']
+  color.crit <- unipalette['green']
+  
+  ## Line types
+  lty.7day <- "dotted" # for vertical dividers
+  lty.30day <- "dashed" # for vertical dividers
+  lty.crit <- "dashed" # for verticals
+  lwd.7day <- .5
+  lwd.30day <- 1.5
+  lwd.I <- .5
+  lwd.crit <- 4
 
 # Margins and Figure Bounds
-margins = c(4,5,1,9.5)+0.1
-top.pannel <- c(0,1,.45,1) # panel bounds: x0,x1,y0,y1 as fraction of figure region
-bottom.pannel <- c(0,1,0,.55) # panel bounds: x0,x1,y0,y1 as fraction of figure region
+  
+  margins = c(4,5,4,8)+0.1
+  top.pannel <- c(0,1,.45,1) # panel bounds: x0,x1,y0,y1 as fraction of figure region
+  bottom.pannel <- c(0,1,0,.65) # panel bounds: x0,x1,y0,y1 as fraction of figure region
 
 # PDF output
-pdf(
-  file = "./output/plots/fig1.pdf",
-  title = "Figure 1",
-  width = 7.25, height=6
-  )
+  pdf(
+    file = "./output/plots/fig1.pdf",
+    title = "Figure 1",
+    width = 7.25, height=6
+    )
+  
+# init figure
+  par(mar=margins)
+  par(lend="butt")
 
 # Top Panel
 
-## Initialize plot of stats
-par(mar=margins)
-par(lend="butt")
-par(fig=top.pannel)
-plot(0,0, type='n', axes=FALSE, ann=FALSE, yaxt="n",
-     xlim=c(plotxmin,plotxmax), ylim=range(top.y.ticks))
-
-## I, lag 1
-lines(subset(sim.7di.I,interval==1 & bandwidth==35 & lag==1)$stats[[1]]$autocorrelation,
-      col=color.ac.I.lag1, lwd=lwd.I)
-
-## weekly snapshots of I, lag 1
-lines(subset(sim.7di.I, interval==7 & bandwidth==35 & lag==1)$stats[[1]]$autocorrelation,
-      col=color.ac.snap7, lwd=lwd.I)
-
-## weekly reports
-lines(subset(reports.7di, tau==7 & bandwidth==35 & rho==2^-3.2 & disp==100)$stats[[1]]$autocorrelation,
-      col=color.7day.imperfect, lwd=lwd.7day)
-
-## monthly reports
-lines(subset(reports.7di, tau==30 & bandwidth==35 & rho==2^-3.2 & disp==1)$stats[[1]]$autocorrelation,
-      col=color.30day.imperfect, lwd=lwd.30day)
-
-## grid
-abline(h=top.y.ticks,col='grey')
-title(ylab="Autocorrelation", line = 3)
-
-# plot critical threshold
-abline(
-  v=20*365, col=color.crit, lty=lty.crit, lwd = lwd.crit
-)
-
-# Axes
-
-axis(side = 2, # 1 specifies left axis
-           at = top.y.ticks, # tick locations (in data units).
-           labels = top.y.ticks, # vector of tick labels
-           las = 1, # label orientation (0:parall., 1:horiz., 2:perp., 3:vert.)
-           tcl = -.5, # tick length (fraction of plot width, neg to draw outside plot)
-           line = .5, # axis position, in units of x data
-           lty = "solid",
-           lwd = 0, # axis line weight
-           lwd.ticks = 1, # tick line weight
-           col = "grey" # axis line color
-           # col.ticks = NULL, # tick line color
-        )
-
-legend("topleft", xpd=NA, inset=c(1.01,0), xjust=0, yjust=0, cex=.65, y.intersp = 3,
-       legend=c(
-         TeX(sprintf("Number Infected, $\\tau = $ %.2f", 
-                     subset(sim.7di.I, interval==1 & bandwidth==35 & lag==1)$taus[[1]]$autocorrelation)),
-         TeX(sprintf("Weekly Snapshots\nof Number Infected, $\\tau = $ %.2f", 
+  ## Initialize plot of stats
+  par(fig=top.pannel)
+  plot(0,0, type='n', axes=FALSE, ann=FALSE, yaxt="n",
+       xlim=c(plotxmin,plotxmax), ylim=range(top.y.ticks))
+  
+  ## grid
+  abline(h=top.y.ticks,col='grey')
+  
+  ## weekly snapshots of I, lag 1
+  lines(subset(sim.7di.I, interval==7 & bandwidth==35 & lag==1)$stats[[1]]$autocorrelation,
+        col=color.7day.snap, lwd=lwd.I)
+  
+  ## weekly reports
+  lines(subset(reports.7di, tau==7 & bandwidth==35 & rho==2^-3.2 & disp==100)$stats[[1]]$autocorrelation,
+        col=color.7day.imperfect, lwd=lwd.7day)
+  
+  ## monthly reports
+  lines(subset(reports.7di, tau==30 & bandwidth==35 & rho==2^-3.2 & disp==1)$stats[[1]]$autocorrelation,
+        col=color.30day.imperfect, lwd=lwd.30day)
+  
+  ## Annotation
+  title(ylab="Autocorrelation", line = 3)
+  text(x=19.75*365,
+       y=c(.925,.3,-.1),
+       adj=1,
+       cex=.65,
+       col=c(color.7day.snap,
+           color.7day.imperfect,
+           color.30day.imperfect),
+       labels=c(
+         TeX(sprintf("$\\tau = $ %.2f",
                      subset(sim.7di.I, interval==7 & bandwidth==35 & lag==1)$taus[[1]]$autocorrelation)),
-         TeX(sprintf("Weekly Reports, $\\tau = $ %.2f", 
+         TeX(sprintf("$\\tau = $ %.2f",
                      subset(reports.7di, tau==7 & bandwidth==35 & rho==2^-3.2 & disp==100)$taus[[1]]$autocorrelation)),
-         TeX(sprintf("Monthly Reports, $\\tau = $ %.2f", 
+         TeX(sprintf("$\\tau = $ %.2f",
                      subset(reports.7di, tau==30 & bandwidth==35 & rho==2^-3.2 & disp==1)$taus[[1]]$autocorrelation))
-       ),
-       col=c(
-         color.ac.I.lag1,
-         color.ac.snap7,
-         color.7day.imperfect,
-         color.30day.imperfect
-         ),
-       lwd=c(lwd.I,lwd.I,lwd.7day,lwd.30day),
-       lty=1,
-       bty='n')
-
-## Bottom Panel
-
-# init plot
-par(mar=margins)
-par(lend="butt")
-par(fig=bottom.pannel, new=TRUE)
-
-plot(0,0, type='n', axes=FALSE, ann=FALSE, yaxt="n",
-     xlim=c(plotxmin,plotxmax), ylim=c(plotymin,plotymax))
-
-# plot time series of cases, aggregated monthly (imperfect reporting)
-lines(subset(reports.7di, tau==7 & bandwidth==35 & rho==2^-3.2 & disp==100)$data[[1]], 
-      type='s', pch=20, lwd=lwd.7day, col=color.7day.imperfect)
-lines(subset(reports.7di, tau==30 & bandwidth==35 & rho==2^-3.2 & disp==1)$data[[1]], 
-      type='s', pch=20, lwd=lwd.30day, col=color.30day.imperfect)
-
-
-# plot time series of number of infected
-poly <- sim.7di$I
-x <- time(poly)
-y <- poly
-poly.x <- c(head(x,1),x,tail(x,1))
-poly.y <- c(head(y,1)*0,y,tail(y,1)*0)
-polygon(x=poly.x,y=poly.y, lwd=lwd.I, border=NA, col=color.I)
-
-# plot critical threshold
-abline(
-  v=20*365, col=color.crit, lty=lty.crit, lwd = lwd.crit
-)
-
-# Axes
-
-axis(side = 1, # 1 specifies bottom axis - major ticks
-           at = seq(plotxmin,plotxmax,365), # tick locations (in data units).
-           labels = seq(plotxmin,plotxmax,365)/365,
-           tcl = -.5, # tick length (fraction of plot width, neg to draw outside plot)
-           line = .5, # axis position, in units of y data
-           lty = "solid",
-           lwd = 0, # axis line weight
-           lwd.ticks = 1, # tick line weight
-           col = "grey" # axis line color
-           # col.ticks = NULL, # tick line color
-        )
-
-axis(side = 2, # 1 specifies left axis
-           at = y.ticks, # tick locations (in data units).
-           labels = y.ticks, # vector of tick labels
-           las = 1, # label orientation (0:parall., 1:horiz., 2:perp., 3:vert.)
-           tcl = -.5, # tick length (fraction of plot width, neg to draw outside plot)
-           line = .5, # axis position, in units of x data
-           lty = "solid",
-           lwd = 0, # axis line weight
-           lwd.ticks = 1, # tick line weight
-           col = "grey" # axis line color
-           # col.ticks = NULL, # tick line color
-        )
-
-# grid lines
-abline(
-  h = y.ticks,
-  col = rgb(0,0,0,.25), 
-  lty = 'solid',
-  lwd = 1
+       )
   )
+  
+  ## plot critical threshold
+  abline(
+    v=20*365, col=color.crit, lty=lty.crit, lwd = lwd.crit
+  )
+  
+  ## Axes
+  
+  axis(side = 1, # 1 specifies bottom axis - major ticks
+             at = seq(plotxmin,plotxmax,365), # tick locations (in data units).
+             labels = FALSE,
+             tcl = -.5, # tick length (fraction of plot width, neg to draw outside plot)
+             line = 1, # axis position (in lines)
+             lty = "solid",
+             lwd = 0, # axis line weight
+             lwd.ticks = 1, # tick line weight
+             col = "grey" # axis line color
+          )
+  axis(side = 3, # 1 specifies bottom axis - major ticks
+             at = seq(plotxmin,plotxmax,365), # tick locations (in data units).
+             labels = seq(plotxmin,plotxmax,365)/365,
+             tcl = -.5, # tick length (fraction of plot width, neg to draw outside plot)
+             line = .5, # axis position (in lines)
+             lty = "solid",
+             lwd = 0, # axis line weight
+             lwd.ticks = 1, # tick line weight
+             col = "grey" # axis line color
+          )
+  axis(side = 2, # 1 specifies left axis
+             at = top.y.ticks, # tick locations (in data units).
+             labels = top.y.ticks, # vector of tick labels
+             las = 1, # label orientation (0:parall., 1:horiz., 2:perp., 3:vert.)
+             tcl = -.5, # tick length (fraction of plot width, neg to draw outside plot)
+             line = .5, # axis position, in lines
+             lty = "solid",
+             lwd = 0, # axis line weight
+             lwd.ticks = 1, # tick line weight
+             col = "grey" # axis line color
+          )
+  mtext(text="Year", side=3, line = 2.5)
+  
+  ## Legend
+  legend("topleft", xpd=NA, inset=c(1.01,0), xjust=0, yjust=0, cex=.65, y.intersp = 3,
+         legend=c(
+           "Weekly Snapshots\nof Number Infected", 
+           "Weekly Reports", 
+           "Monthly Reports"
+           ),
+         col=c(
+           # color.ac.I.lag1,
+           color.7day.snap,
+           color.7day.imperfect,
+           color.30day.imperfect
+           ),
+         lwd=c(
+           # lwd.I,
+           lwd.I,
+           lwd.7day,
+           lwd.30day),
+         lty=1,
+         bty='n')
 
+# Bottom Panel
 
-# annotations
-title(ylab = "Number", line = 3)
-title(xlab="Year", line = 2.5)
+  ## init plot
+  par(fig=bottom.pannel, new=TRUE)
+  plot(0,0, type='n', axes=FALSE, ann=FALSE, yaxt="n",
+       xlim=c(plotxmin,plotxmax), ylim=c(plotymin,plotymax))
+  
+  ## plot time series of weekly snapshots of number of infected, filled line
+  poly <- subset(sim.7di.I, interval==7 & bandwidth==35 & lag==1)$data[[1]]
+  x <- time(poly)
+  y <- poly
+  poly.x <- c(head(x,1),x,tail(x,1))
+  poly.y <- c(0,y,0)
+  polygon(x=poly.x,y=poly.y, lwd=.1, border=color.7day.snap, col=color.7day.snap.fill)
+  
+  ## plot time series of cases, aggregated Weekly (imperfect reporting), filled staircase
+  poly <- subset(reports.7di, tau==7 & bandwidth==35 & rho==2^-3.2 & disp==100)$data[[1]]
+  x <- time(poly) 
+  y <- as.numeric(poly)
+  poly.x <- c(rbind(x,x)) ## double each time
+  poly.y <- c(0,
+              c(rbind(y[2:length(y)],y[2:length(y)])),
+              0)
+  polygon(x=poly.x,y=poly.y, lwd=lwd.7day, border=color.7day.imperfect, col=color.7day.imperfect)
 
-text(365*20, plotymax, xpd=NA, labels="epidemic threshold", adj=c(1,1.5), srt=90, col=color.crit)
-
-# Legend
-par(lend="butt")
-legend("topleft", xpd=NA, inset=c(1.01,0), xjust=0, yjust=0, cex=.65, y.intersp = 1.5,
-       legend=c("Number Infected", "Weekly Reports", "Monthly Reports"),
-       col=c(color.I,color.7day.imperfect, color.30day.imperfect),
-       lty=1,
-       lwd=c(9,lwd.7day,lwd.30day),
-       bty='n')
+  ## plot time series of cases, aggregated Monthly (imperfect reporting), staircase
+  lines(subset(reports.7di, tau==30 & bandwidth==35 & rho==2^-3.2 & disp==1)$data[[1]], 
+        type='s', pch=20, lwd=lwd.30day, col=color.30day.imperfect)
+  
+  ## plot critical threshold
+  abline(
+    v=20*365, col=color.crit, lty=lty.crit, lwd = lwd.crit
+  )
+  
+  ## Axes
+  
+  axis(side = 1, # 1 specifies bottom axis - major ticks
+             at = seq(plotxmin,plotxmax,365), # tick locations (in data units).
+             labels = seq(plotxmin,plotxmax,365)/365,
+             tcl = -.5, # tick length (fraction of plot width, neg to draw outside plot)
+             line = .5, # axis position, in lines
+             lty = "solid",
+             lwd = 0, # axis line weight
+             lwd.ticks = 1, # tick line weight
+             col = "grey" # axis line color
+             # col.ticks = NULL, # tick line color
+          )
+  
+  axis(side = 2, # 1 specifies left axis
+             at = y.ticks, # tick locations (in data units).
+             labels = y.ticks, # vector of tick labels
+             las = 1, # label orientation (0:parall., 1:horiz., 2:perp., 3:vert.)
+             tcl = -.5, # tick length (fraction of plot width, neg to draw outside plot)
+             line = .5, # axis position, in lines
+             lty = "solid",
+             lwd = 0, # axis line weight
+             lwd.ticks = 1, # tick line weight
+             col = "grey" # axis line color
+             # col.ticks = NULL, # tick line color
+          )
+  
+  ## grid lines
+  abline(
+    h = y.ticks,
+    col = rgb(0,0,0,.25), 
+    lty = 'solid',
+    lwd = 1
+    )
+  
+  ## annotations
+  title(ylab = "Number", line = 3)
+  title(xlab="Year", line = 2.5)
+  
+  text(365*20, plotymax, xpd=NA, cex=.75, labels="epidemic threshold", adj=c(1,1.5), srt=90, col=color.crit)
+  
+  ## Legend
+  par(lend="butt")
+  legend("topleft", xpd=NA, inset=c(1.01,0), xjust=0, yjust=0, cex=.65, y.intersp = 1.5,
+         legend=c(
+           "Weekly Snapshots\nof Number Infected", 
+           "Weekly Reports", 
+           "Monthly Reports"
+           ),
+         col=c(color.7day.snap.fill, color.7day.imperfect, color.30day.imperfect),
+         lty=1,
+         lwd=c(9,9,lwd.30day),
+         bty='n')
 
 # close PDF
 invisible(dev.off())
 
-## convert figure from PDF to PNG
+# convert figure from PDF to PNG
 path <- "./output/plots/fig1.pdf"
 targetfmt <- "png"
 pdf <- image_read(path, density = "300x300")
@@ -322,7 +364,7 @@ image_write(png, path = paste0(path,".", format=targetfmt), format = targetfmt)
 
 
 ```
-![Simulated epidemic approaching the epidemic threshold. The bottom panel shows the true number of infected in grey, weekly aggregated case reports in light red and monthly (30 day) aggregated case reports in dark red. Case reports are subject to negative binomially distributed reporting error, with reporting probability $\rho = 0.1088$ and dispersion parameter $\phi = 100$ for weekly reports and $\phi = 1$ (further details in methods section). Transmission dynamics are modeled using the SIR model with birth and death with average population size $N_0 = 10^6$, importation rate $\zeta = 1$ case per week, mean life expectancy 70 years, and mean infectious period 1 week. $R_0$ increases from 0 to 1 over 20 years. Simulations performed using the Gillespie algorithm. The top panel shows the lag 1 autocorrelation calculated using a centered moving window from various different time series data sets, as indicated in the figure. Changing the data changes not only the values of the autocorrelation, but also the trend, quantified using Kendall's $\tau$. The moving window average is calculated using a bandwidth $b = 35$, for details see the methods section.](./output/plots/fig1.pdf.png)
+![Simulated epidemic approaching the epidemic threshold. The bottom panel shows weekly snapshots of the true number of infected in grey, weekly aggregated case reports in light red, and monthly (30 day) aggregated case reports in dark red. Case reports are subject to negative binomially distributed reporting error, with reporting probability $\rho = 0.1088$ and dispersion parameter $\phi = 100$ for weekly reports and $\phi = 1$ (further details in methods section). Transmission dynamics are modeled using the SIR model with birth and death with average population size $N_0 = 10^6$, importation rate $\zeta = 1$ case per week, mean life expectancy 70 years, and mean infectious period 1 week. $R_0$ increases from 0 to 1 over 20 years. Simulations performed using the Gillespie algorithm. The top panel shows the lag 1 autocorrelation calculated using a centered moving window from various different time series data sets, as indicated in the figure. Changing the data changes not only the values of the autocorrelation, but also the trend, quantified using Kendall's $\tau$. The moving window average is calculated using a bandwidth $b = 35$, for details see the methods section.](./output/plots/fig1.pdf.png)
 
 
 
@@ -333,227 +375,10 @@ image_write(png, path = paste0(path,".", format=targetfmt), format = targetfmt)
 - Reporting probability = 1
 - Dispersion = NA
 
-## Version 1 (depricated)
-  
-```{r echo = FALSE}
-
-# Random Number Generator state recall in a robust, portable way, for reproducibility
-
-# Restore random number generator state from file
-load("./data/RNGdata20170602_163629.Rdata")
-RNGversion(RNGversion) # enforces RNG version
-do.call("RNGkind",as.list(RNGkind)) # enforces RNG kind
-.Random.seed <- RNGseed # restore seed to global environment
-
-# parameters
-observation_days = 20 * 365
-sampling_interval <- 1 # simulation sampling interval in days
-tau <- 7  # reporting interval in days
-infectious_days <- 7  # infectious period in days
-reporting_prob <- 1.0
-dispersion_parameter <- 100
-
-# do simulation
-sim.7di <- sample_process(observation_days = observation_days,
-                          sampling_interval=sampling_interval, 
-                          infectious_days = infectious_days)
-
-# Data must be coerced to a time series first, setting start time to the minimum time in dataframe (0 in this case), otherwise aggregate.ts() will coerce the data to a time series starting at time 1.  
-sim.7di.cases <- ts(sim.7di$cases, start = sim.7di$time[1])  
-
-# aggregate reports ( 7 day reporting period)
-reports.7di.7dr.perfect <- aggregate.ts(sim.7di.cases, # changed from sim.7di$cases
-                                        nfrequency=1 / (7/sampling_interval)
-                                        )
-
-# aggregate reports ( 30 day reporting period)
-reports.7di.30dr.perfect <- aggregate.ts(sim.7di.cases, # changed from sim.7di$cases
-                                        nfrequency=1 / (30/sampling_interval)
-                                        )
-
-
-# ## for imperfect reporting, use sample_observations() and specify reporting prob and dispersion
-# reports.7di.7dr.hrp.ldisp <- sample_observation(sim.7di$cases, # use sim.7di.cases instead
-#                                                 aggregation_days = tau/sampling_interval,
-#                                                 reporting_prob = reporting_prob,
-#                                                 dispersion_parameter = dispersion_parameter
-#                                                 )
-
-# extract caselist (under perfect reporting) (flows from I to S))
-caselist <- sim.7di[rep(seq(nrow(sim.7di)), sim.7di$cases), c("time", "cases")]
-caselist$cases <- caselist$cases != 0
-
-# extract list of transmissions (flows from S to I)
-transmissionlist <- sim.7di[rep(seq(nrow(sim.7di)), sim.7di$transmissions), c("time", "transmissions")]
-transmissionlist$transmissions <- transmissionlist$transmissions != 0
-rownames(transmissionlist) <- NULL
-
-# extract list of deaths of I
-deathlist <- sim.7di[rep(seq(nrow(sim.7di)), sim.7di$deathsI), c("time", "deathsI")]
-deathlist$deathsI <- deathlist$deathsI != 0
-
-# merged list of deaths of I (I --> death) and "cases" (I --> R)
-caseanddeathlist <- merge(caselist,deathlist,all=TRUE) # renumbered
-
-
-## random heights for bars - TODO: extract this into a helper function
-# heights <- rnorm(n=sum(sim.7dayinfectious$cases),mean=0,sd=1.5)
-# heights <- runif(n=sum(sim.7dayinfectious$cases),min=-4.4,max=4.5)
-
-height.levels <- 35
-heights <- as.vector(
-  replicate(
-    ceiling(sum(transmissionlist$transmissions)/height.levels), # number of calls
-    c(
-      sample(1:height.levels, height.levels, replace=F)+runif(1,-.25,.25),
-      sample(1:height.levels, height.levels, replace=F)+runif(1,-.25,.25)+.5
-      )
-    )
-  )[1:length(transmissionlist$time)]
-
-## TODO: there was a request to try this version with non-random heights (stacked). 
-## Alternately, there is a need to show in a better way that height is not meaningful.
-
-# ## Alt heights - sequential
-# 
-# heights <- as.vector(
-#   replicate(
-#     ceiling(sum(transmissionlist$transmissions)/height.levels), # number of calls
-#     1:height.levels
-#     )
-#   )[1:length(transmissionlist$time)]
-
-
-
-# Set plotting window (days)
-plotxmin <- 7*52*15 # days
-plotxlength <- 180 # days
-plotxmax <- plotxmin+plotxlength # days
-
-## About Devices: Plot is made to the PDF device.  After the PDF device is closed, the figure is read in as an image and converted  to PNG.
-
-# # PDF output
-path <- "./output/plots/fig2_v1.pdf"
-pdf(
-  file = path,
-  title = "Figure 2",
-  width = 7, height=7
-  )
-
-# # PNG output
-# # png("variance-vs-vaccine-uptake_zero-max.png", width = 600, height = 960, pointsize = 20)
-# png(filename="./output/plots/fig2.png", 
-#     type="cairo",
-#     units="in", 
-#     width=7, 
-#     height=7, 
-#     pointsize=12, 
-#     res=300)
-
-
-# Initialize plot of individual infections as multiple line segments
-par(fig=c(0,1,0,.6))
-plot(0,0, type='n', axes=FALSE, ann=FALSE, yaxt="n",
-     xlim=c(plotxmin,plotxmax), ylim=c(min(heights)-3,max(heights)+3))
-
-# plot cases with actual transmission times (onsets), random pairing
-## Each case time is paired with a random transmission time <= case time.
-## For some cases, case time == transmission time
-tmp_transmissionlist <- transmissionlist
-
-for(i in 1:length(transmissionlist$time)){  
-    
-    # heightvector <- heights[i]+runif(caselist$cases[i],-5,5) ## runif = KLUDGE
-
-    offsettime <- caseanddeathlist$time[i]
-    onsetindex <- sample(1:nrow(tmp_transmissionlist[tmp_transmissionlist$time<=offsettime,]),1)
-    # onsettime <- sample(transmissionlist$time[1:"firstindexwhosetimeis less than time of R[i]"],1)
-    
-    height <- heights[i] # pseudo random
-    # height <- sim.7di[sim.7di$time == caseanddeathlist$time[i],]$I # stacked (not working)
-    
-    segments(
-      x0 = tmp_transmissionlist$time[onsetindex],
-      y0 = height,
-      
-      # x1 = recovery, death or end of obs period:
-      x1 = ifelse(!is.na(caseanddeathlist$time[i]),caseanddeathlist$time[i],observation_days), 
-      y1 = height
-      )
-    points(
-      x = ifelse(!is.na(caseanddeathlist$time[i]),caseanddeathlist$time[i],observation_days),
-      y = height,
-      pch = ifelse(caseanddeathlist$cases[i]==TRUE,16,NA)
-      )
-
-    tmp_transmissionlist <- tmp_transmissionlist[-onsetindex, , drop = FALSE]    
-    
-}
-axis(side = 1, # 1 specifies bottom axis
-           at = seq(plotxmin,plotxmax,7), # vector of tick locations (in data units).
-           labels = seq(plotxmin,plotxmax,7), # vector of tick labels
-           las = 1, # label orientation (0:parall., 1:horiz., 2:perp., 3:vert.)
-           tck = -.05, # tick length (fraction of plot width, neg to draw outside plot)
-           pos = -1, # axis position, in units of y data
-           lty = "solid",
-           lwd = 1, # axis line weight
-           lwd.ticks = 1, # tick line weight
-           col = "grey" # axis line color
-           # col.ticks = NULL, # tick line color
-        )# abline(v=caselist$time) # case times
-title(xlab="observation day")
-
-# plot observation window dividers
-abline(v=(7*0:(observation_days/7))-.0, col=rgb(1,0,0,.5))  # slightly shifted version: abline(v=(7*0:(observation_days/7))-.1, col=rgb(1,0,0,.5))v
-abline(v=(30*0:(observation_days/30))-.0, col=rgb(0,0,1,.5), lty=2)  # slightly shifted version: abline(v=(7*0:(observation_days/7))-.1, col=rgb(1,0,0,.5))
-
-# initialize plot of time series
-par(fig=c(0,1,.35,1), new=TRUE)
-
-# plot time series of reports (7 day)
-plot(reports.7di.7dr.perfect, type='s', lwd=3, xaxt="n", xlab="", ylab="number of cases", col=rgb(1,0,0,.5), bty='n',
-     xlim=c(plotxmin,plotxmax),  # KLUDGE: xlim=c(plotxmin+1,plotxmax+1) compensates for type='s' - may no longer be needed with fixed time seres aggregation
-     ylim=c(0,max(window(reports.7di.30dr.perfect,plotxmin-30,plotxmax+30)))  # max 30day reports in window
-     )  
-
-# plot time series of reports (30 day)
-lines(reports.7di.30dr.perfect, type='s', lwd=3, col=rgb(0,0,1,.5))
-
-# plot time series of true cases
-lines(sim.7di$I, type='s')
-
-# grid lines
-abline(
-  h=seq(0,max(window(reports.7di.30dr.perfect,plotxmin-30,plotxmax+30)),by=20),
-  col=grey(.5), 
-  lty=2
-  )
-# plot observation window dividers
-abline(v=(7*0:(observation_days/7))-.0, col=rgb(1,0,0,.5)) # slightly shifted version: abline(v=(7*0:(observation_days/7))-.1, col=rgb(1,0,0,.5))
-abline(v=(30*0:(observation_days/30))-.0, col=rgb(0,0,1,.5), lty=2) # slightly shifted version: abline(v=(7*0:(observation_days/7))-.1, col=rgb(1,0,0,.5))
-
-# annotations
-text(x=plotxmax, y = 3, "true", las=1, adj=1, col=rgb(0,0,0,1))
-text(x=plotxmax, y = 15, "weekly", las=1, adj=1, col=rgb(1,0,0,.5))
-text(x=plotxmax, y = 45, "monthly", las=1, adj=1, col=rgb(0,0,1,.5))
-
-
-## Close PDF
-dev.off()
-
-## convert figure from PDF to PNG
-targetfmt <- "png"
-pdf <- image_read(path, density = "300x300")
-png <- image_convert(pdf, format=targetfmt, depth=8)
-image_write(png, path = paste0(path,".", format=targetfmt), format = targetfmt)
-
-```
-
-## Version 2
-
   
 ```{r eval=FALSE, warning=FALSE, results='hide'}
 # Data
+
   load("./output/data/sim.7di.Rda")
   load("./output/data/sim.7di.I.Rda")
   load("./output/data/reports.7di.Rda")
@@ -584,201 +409,255 @@ image_write(png, path = paste0(path,".", format=targetfmt), format = targetfmt)
   # merged list of deaths of I (I --> death) and "cases" (I --> R)
   caseanddeathlist <- merge(caselist,deathlist,all=TRUE) # renumbered
   
-# Set plotting window (days)
-plotxmin <- 7*870 # days  7*52*18  Week 870
-plotxlength <- 7*12 # days # 180
-plotxmax <- plotxmin+plotxlength # days
-windows.7day <- (7*0:(sim_params$observation_days/7))-.0  # no shift
-windows.30day <- (30*0:(sim_params$observation_days/30))-.0  # no shift
+# Scales & Ranges
 
-# Top panel y limits
-plotymin <- 0
-plotymax <- max(
-  window(reports.7di.30dr.perfect,start=plotxmin-30,end=plotxmax+30),
-  window(reports.7di.7dr.perfect,start=plotxmin-30,end=plotxmax+30),
-  window(sim.7di$I,start=plotxmin-30,end=plotxmax+30)
-  )
+  # Set plotting window (days)
+  plotxmin <- 7*870 # days  7*52*18  Week 870
+  plotxlength <- 7*12 # days # 180
+  plotxmax <- plotxmin+plotxlength # days
+  windows.7day <- (7*0:(sim_params$observation_days/7))-.0  # no shift
+  windows.30day <- (30*0:(sim_params$observation_days/30))-.0  # no shift
+  
+  # Top panel y limits
+  plotymin <- 0
+  plotymax <- max(
+    window(reports.7di.30dr.perfect,start=plotxmin-30,end=plotxmax+30),
+    window(reports.7di.7dr.perfect,start=plotxmin-30,end=plotxmax+30),
+    window(sim.7di$I,start=plotxmin-30,end=plotxmax+30)
+    )
 
-# Bottom panel Y limits
-min.transmissionID <- as.integer(rownames(head(transmissionlist[transmissionlist$time >= plotxmin,],1)))
-min.transmissionID <- floor(min.transmissionID/10)*10
-
-max.transmissionID <- as.integer(rownames(tail(transmissionlist[transmissionlist$time <= plotxmax,],1)))
-max.transmissionID <- ceiling(max.transmissionID/10)*10
-
-# Top panel Y ticks
-top.y.tick.interval <- 10
-top.y.ticks <- top.y.tick.interval*seq(from = 0, to = ceiling(plotymax/top.y.tick.interval), by = 1)
+  # Bottom panel Y limits
+  min.transmissionID <- as.integer(rownames(head(transmissionlist[transmissionlist$time >= plotxmin,],1)))
+  min.transmissionID <- floor(min.transmissionID/10)*10
+  
+  max.transmissionID <- as.integer(rownames(tail(transmissionlist[transmissionlist$time <= plotxmax,],1)))
+  max.transmissionID <- ceiling(max.transmissionID/10)*10
+  
+  # Top panel Y ticks
+  top.y.tick.interval <- 10
+  top.y.ticks <- top.y.tick.interval*seq(from = 0, to = ceiling(plotymax/top.y.tick.interval), by = 1)
 
 ## Visual Variables
-color.7day <- unipalette['lightblue']
-color.30day <- unipalette['red']
-color.I <- unipalette['black']
-lty.7day <- "dotted" # for vertical dividers
-lty.30day <- "dashed" # for vertical dividers
-lwd.7day <- 1.5
-lwd.30day <- 3
-lwd.I <- 1
 
-# divider parameters as list
-dividers.7day <- list(v=windows.7day, col=color.7day, lty=lty.7day, lwd=lwd.7day, xpd=FALSE)
-dividers.30day <- list(v=windows.30day, col=color.30day, lty=lty.30day, lwd=lwd.30day, xpd=FALSE)
+  color.7day <- unipalette['lightblue']
+  color.30day <- unipalette['red']
+  color.I <- unipalette['black']
+  lty.7day <- "dotted" # for vertical dividers
+  lty.30day <- "dashed" # for vertical dividers
+  lwd.7day <- 1.5
+  lwd.30day <- 3
+  lwd.I <- 1
+
+  ## divider parameters as list
+  dividers.7day <- list(v=windows.7day, col=color.7day, lty=lty.7day, lwd=lwd.7day, xpd=FALSE)
+  dividers.30day <- list(v=windows.30day, col=color.30day, lty=lty.30day, lwd=lwd.30day, xpd=FALSE)
+
+# Margins and Figure Bounds
+
+  margins = c(4,5,3.5,7)+0.1
+  bottom.pannel.height <- .75
+  bottom.pannel <- c(0,1,0,bottom.pannel.height) # panel bounds: x0,x1,y0,y1 as fraction of figure region
+  top.pannel <- c(0,1,bottom.pannel.height-.2,1) # panel bounds: x0,x1,y0,y1 as fraction of figure region
 
 ## About Devices: Plot is made to the PDF device.  After the PDF device is closed, the figure is read in as an image and converted  to PNG.
-# # PDF output
-path <- "./output/plots/fig2.pdf"
-pdf(
-  file = path,
-  title = "Figure 2 (version 2)",
-  width = 5.25, height=6
-  )
 
-# Initialize plot of individual infections as multiple line segments
+# PDF output
 
-bottom.pannel.height <- .75
-par(mar=c(4,5,1,7)+0.1)
-par(lend="butt")
-par(fig=c(0,1,0,bottom.pannel.height))
-plot(0,0, type='n', axes=FALSE, ann=FALSE, yaxt="n",
-     xlim=c(plotxmin,plotxmax), ylim=c(min.transmissionID,max.transmissionID))
+  path <- "./output/plots/fig2.pdf"
+  pdf(
+    file = path,
+    title = "Figure 2 (version 2)",
+    width = 5.25, height=6
+    )
 
-# plot cases with actual transmission times (onsets), random pairing
-## Each case time is paired with a random transmission time <= case time.
-## For some cases, case time == transmission time
-tmp_transmissionlist <- transmissionlist
+  # init figure
 
-# Plot segments
-for(i in 1:length(transmissionlist$time)){  
-    
-    offsettime <- caseanddeathlist$time[i]
-    onsetindex <- sample(1:nrow(tmp_transmissionlist[tmp_transmissionlist$time<=offsettime,]),1)
-    id <- tmp_transmissionlist$ID[onsetindex]
-    xstart <- tmp_transmissionlist$time[onsetindex]
-    # recovery, death or end of obs period:
-    xend <- ifelse(!is.na(caseanddeathlist$time[i]),caseanddeathlist$time[i],sim_params$observation_days) 
-    
-    # draw segment
-    segments(
-      x0 = xstart, y0 = id,
-      x1 = xend, y1 = id
-      )
-    # points(
-    #   x = xend, y = id,
-    #   pch = ifelse(caseanddeathlist$cases[i]==TRUE,16,NA)
-    #   )
-    symbols(x = xend, y = id, add=TRUE, inches = FALSE, circles = .3, bg='black')
+  par(mar=margins)
+  par(lend="butt")
 
-    tmp_transmissionlist <- tmp_transmissionlist[-onsetindex, , drop = FALSE]
-}
+# Bottom Panel (plot of individual infections as multiple line segments)
 
-# plot observation window dividers
-do.call(abline, dividers.7day)
-do.call(abline, dividers.30day)
+  ## init plot
+    par(fig=bottom.pannel)
+    plot(0,0, type='n', axes=FALSE, ann=FALSE, yaxt="n",
+         xlim=c(plotxmin,plotxmax), ylim=c(min.transmissionID,max.transmissionID))
 
-# Axes
-axis(side = 1, # 1 specifies bottom axis - minor ticks
-           at = seq(plotxmin-7,plotxmax+7,7), # tick locations (in data units).
-           labels = FALSE, # vector of tick labels
-           las = 1, # label orientation (0:parall., 1:horiz., 2:perp., 3:vert.)
-           tcl = -.5, # tick length (fraction of plot width, neg to draw outside plot)
-           line = .5, # number of lines into margin at which axis is drawn 
-           lty = "solid",
-           lwd = 0, # axis line weight
-           lwd.ticks = 1, # tick line weight
-           col = "grey" # axis line color
-           # col.ticks = NULL, # tick line color
+  ## plot cases with actual transmission times (onsets), random pairing
+  ## Each case time is paired with a random transmission time <= case time.
+  ## For some cases, case time == transmission time
+  tmp_transmissionlist <- transmissionlist
+
+  ## Plot segments
+  for(i in 1:length(transmissionlist$time)){  
+      
+      offsettime <- caseanddeathlist$time[i]
+      onsetindex <- sample(1:nrow(tmp_transmissionlist[tmp_transmissionlist$time<=offsettime,]),1)
+      id <- tmp_transmissionlist$ID[onsetindex]
+      xstart <- tmp_transmissionlist$time[onsetindex]
+      # recovery, death or end of obs period:
+      xend <- ifelse(!is.na(caseanddeathlist$time[i]),caseanddeathlist$time[i],sim_params$observation_days) 
+      
+      # draw segment
+      segments(
+        x0 = xstart, y0 = id,
+        x1 = xend, y1 = id
         )
+      # points(
+      #   x = xend, y = id,
+      #   pch = ifelse(caseanddeathlist$cases[i]==TRUE,16,NA)
+      #   )
+      symbols(x = xend, y = id, add=TRUE, inches = FALSE, circles = .3, bg='black')
+  
+      tmp_transmissionlist <- tmp_transmissionlist[-onsetindex, , drop = FALSE]
+  }
+  
+  ## plot observation window dividers
+  do.call(abline, dividers.7day)
+  do.call(abline, dividers.30day)
+  
+  # Axes
+  axis(side = 1, # 1 specifies bottom axis - minor ticks
+             at = seq(plotxmin-7,plotxmax+7,7), # tick locations (in data units).
+             labels = FALSE, # vector of tick labels
+             las = 1, # label orientation (0:parall., 1:horiz., 2:perp., 3:vert.)
+             tcl = -.5, # tick length (fraction of plot width, neg to draw outside plot)
+             line = .5, # number of lines into margin at which axis is drawn 
+             lty = "solid",
+             lwd = 0, # axis line weight
+             lwd.ticks = 1, # tick line weight
+             col = "grey" # axis line color
+             # col.ticks = NULL, # tick line color
+          )
+  tmp.at <- seq(plotxmin,plotxmax+7,28)
+  tmp.lab <- (tmp.at-plotxmin)/7
+  axis(side = 1, # 1 specifies bottom axis - major ticks
+             at = tmp.at, # tick locations (in data units).
+             labels = tmp.lab,
+             tcl = -.5, # tick length (fraction of plot width, neg to draw outside plot)
+             line = .5, # number of lines into margin at which axis is drawn 
+             lty = "solid",
+             lwd = 0, # axis line weight
+             lwd.ticks = 1, # tick line weight
+             col = "grey" # axis line color
+             # col.ticks = NULL, # tick line color
+          )
+  tmp.at <- seq(min.transmissionID,max.transmissionID,20)
+  tmp.lab <- tmp.at - min.transmissionID
+  axis(side = 2, # 1 specifies left axis
+             at = tmp.at, # tick locations (in data units).
+             labels = tmp.lab, # vector of tick labels
+             las = 1, # label orientation (0:parall., 1:horiz., 2:perp., 3:vert.)
+             tcl = -.5, # tick length (fraction of plot width, neg to draw outside plot)
+             line = .5, # number of lines into margin at which axis is drawn 
+             lty = "solid",
+             lwd = 0, # axis line weight
+             lwd.ticks = 1, # tick line weight
+             col = "grey" # axis line color
+             # col.ticks = NULL, # tick line color
+          )
+  title(xlab="Week", line = 2.5)
+  title(ylab = "Case ID", line = 3)
 
-tmp.at <- seq(plotxmin,plotxmax+7,28)
-tmp.lab <- (tmp.at-plotxmin)/7
-axis(side = 1, # 1 specifies bottom axis - major ticks
-           at = tmp.at, # tick locations (in data units).
-           labels = tmp.lab,
-           tcl = -1, # tick length (fraction of plot width, neg to draw outside plot)
-           line = .5, # number of lines into margin at which axis is drawn 
-           lty = "solid",
-           lwd = 0, # axis line weight
-           lwd.ticks = 1, # tick line weight
-           col = "grey" # axis line color
-           # col.ticks = NULL, # tick line color
-        )
-tmp.at <- seq(min.transmissionID,max.transmissionID,20)
-tmp.lab <- tmp.at - min.transmissionID
-axis(side = 2, # 1 specifies left axis
-           at = tmp.at, # tick locations (in data units).
-           labels = tmp.lab, # vector of tick labels
-           las = 1, # label orientation (0:parall., 1:horiz., 2:perp., 3:vert.)
-           tcl = -.5, # tick length (fraction of plot width, neg to draw outside plot)
-           line = .5, # number of lines into margin at which axis is drawn 
-           lty = "solid",
-           lwd = 0, # axis line weight
-           lwd.ticks = 1, # tick line weight
-           col = "grey" # axis line color
-           # col.ticks = NULL, # tick line color
-        )
-title(xlab="Week", line = 2.5)
-title(ylab = "Case ID", line = 4)
+# Top Panel (initialize plot of time series)
 
-# initialize plot of time series
+  ## init plot
+  par(fig=top.pannel, new=TRUE)
 
-par(fig=c(0,1,bottom.pannel.height-.15,1), new=TRUE)
+  ## plot time series of reports (7 day)
+  plot(reports.7di.7dr.perfect, type='s', axes = FALSE, xlab="", bty='n', ylab="", 
+       lwd=lwd.7day, 
+       col=color.7day,
+       xlim=c(plotxmin,plotxmax),  
+       ylim=c(plotymin,plotymax) # max 30day reports in window 
+       )  
 
-# plot time series of reports (7 day)
-plot(reports.7di.7dr.perfect, type='s', axes = FALSE, xlab="", bty='n', ylab="", 
-     lwd=lwd.7day, 
-     col=color.7day,
-     xlim=c(plotxmin,plotxmax),  
-     ylim=c(plotymin,plotymax) # max 30day reports in window 
-     )  
+  ## plot time series of reports (30 day)
+  lines(reports.7di.30dr.perfect, type='s', lwd=lwd.30day, col=color.30day)
+  
+  ## plot time series of true cases
+  lines(sim.7di$I, type='S', lwd=lwd.I) # note: type="S" not "s"
 
-# plot time series of reports (30 day)
-lines(reports.7di.30dr.perfect, type='s', lwd=lwd.30day, col=color.30day)
+  ## grid lines
+  abline(
+    h = top.y.ticks,
+    col = rgb(0,0,0,.25), 
+    lty = 'solid',
+    lwd = 1
+    )
 
-# plot time series of true cases
-lines(sim.7di$I, type='S', lwd=lwd.I) # note: type="S" not "s"
+  ## plot observation window dividers
+  do.call(abline, dividers.7day)
+  do.call(abline, dividers.30day)
+  
+  ## Axes
+  axis(side = 1, # 1 specifies bottom axis - minor ticks
+             at = seq(plotxmin-7,plotxmax+7,7), # tick locations (in data units).
+             labels = FALSE, # vector of tick labels
+             las = 1, # label orientation (0:parall., 1:horiz., 2:perp., 3:vert.)
+             tcl = -.5, # tick length (fraction of plot width, neg to draw outside plot)
+             line = .5, # number of lines into margin at which axis is drawn 
+             lty = "solid",
+             lwd = 0, # axis line weight
+             lwd.ticks = 1, # tick line weight
+             col = "grey" # axis line color
+             # col.ticks = NULL, # tick line color
+          )
+  axis(side = 3, # 1 specifies bottom axis - minor ticks
+             at = seq(plotxmin-7,plotxmax+7,7), # tick locations (in data units).
+             labels = FALSE, # vector of tick labels
+             las = 1, # label orientation (0:parall., 1:horiz., 2:perp., 3:vert.)
+             tcl = -.5, # tick length (fraction of plot width, neg to draw outside plot)
+             line = .5, # number of lines into margin at which axis is drawn 
+             lty = "solid",
+             lwd = 0, # axis line weight
+             lwd.ticks = 1, # tick line weight
+             col = "grey" # axis line color
+             # col.ticks = NULL, # tick line color
+          )
+  mtext(text="Week", side=3, line = 2)
+  
+  tmp.at <- seq(plotxmin,plotxmax+7,28)
+  tmp.lab <- (tmp.at-plotxmin)/7
+  axis(side = 3, # 1 specifies bottom axis - major ticks
+             at = tmp.at, # tick locations (in data units).
+             labels = tmp.lab,
+             tcl = -.5, # tick length (fraction of plot width, neg to draw outside plot)
+             line = .5, # number of lines into margin at which axis is drawn 
+             lty = "solid",
+             lwd = 0, # axis line weight
+             lwd.ticks = 1, # tick line weight
+             col = "grey" # axis line color
+             # col.ticks = NULL, # tick line color
+          )
+  axis(side = 2, # 1 specifies left axis
+             at = top.y.ticks, # tick locations (in data units).
+             labels = top.y.ticks, # vector of tick labels
+             las = 1, # label orientation (0:parall., 1:horiz., 2:perp., 3:vert.)
+             tcl = -.5, # tick length (fraction of plot width, neg to draw outside plot)
+             line = .5, # number of lines into margin at which axis is drawn 
+             lty = "solid",
+             lwd = 0, # axis line weight
+             lwd.ticks = 1, # tick line weight
+             col = "grey" # axis line color
+             # col.ticks = NULL, # tick line color
+          )
+  title(ylab = "Number", line = 3)
 
-# grid lines
-abline(
-  h = top.y.ticks,
-  col = rgb(0,0,0,.25), 
-  lty = 'solid',
-  lwd = 1
-  )
+  ## annotations
 
-# plot observation window dividers
-do.call(abline, dividers.7day)
-do.call(abline, dividers.30day)
+  ## Legend
+  par(lend="butt")
+  legend("topright", xpd=NA, inset=c(-0.5,0), xjust=0, yjust=0, cex=.75, y.intersp = 1.5,
+         legend=c("Number Infected", "Weekly Reports","Monthly Reports"),
+         col=c(color.I,color.7day,color.30day),
+         lwd=c(lwd.I,lwd.7day,lwd.30day),
+         lty=1,
+         bty='n')
 
-# Axes
-axis(side = 2, # 1 specifies left axis
-           at = top.y.ticks, # tick locations (in data units).
-           labels = top.y.ticks, # vector of tick labels
-           las = 1, # label orientation (0:parall., 1:horiz., 2:perp., 3:vert.)
-           tcl = -.5, # tick length (fraction of plot width, neg to draw outside plot)
-           line = .5, # number of lines into margin at which axis is drawn 
-           lty = "solid",
-           lwd = 0, # axis line weight
-           lwd.ticks = 1, # tick line weight
-           col = "grey" # axis line color
-           # col.ticks = NULL, # tick line color
-        )
-title(ylab = "Number", line = 4)
-
-# annotations
-
-# Legend
-par(lend="butt")
-legend("topright", xpd=NA, inset=c(-0.5,0), xjust=0, yjust=0, cex=.75, y.intersp = 1.5,
-       legend=c("infected", "weekly reports","monthly reports"),
-       col=c(color.I,color.7day,color.30day),
-       lwd=c(lwd.I,lwd.7day,lwd.30day),
-       lty=1,
-       bty='n')
-
-## Close PDF
+# Close PDF
 invisible(dev.off())
 
-## convert figure from PDF to PNG
+# convert figure from PDF to PNG
 targetfmt <- "png"
 pdf <- image_read(path, density = "300x300")
 png <- image_convert(pdf, format=targetfmt, depth=8)
@@ -795,6 +674,7 @@ image_write(png, path = paste0(path,".", format=targetfmt), format = targetfmt)
 ```{r eval=FALSE, warning=FALSE, results='hide'}
 
 # Data
+
   load("./output/data/sim.7di.Rda")
   load("./output/data/sim.7di.I.Rda")
   load("./output/data/reports.7di.Rda")
@@ -806,133 +686,129 @@ image_write(png, path = paste0(path,".", format=targetfmt), format = targetfmt)
   reports.7di.7dr.imperfect <- subset(reports.7di, tau==7 & bandwidth==35 & rho== .25 & disp==0.1)$data[[1]]
 
   # extract autocorrelation
-  reports.7di.7dr.perfect.autocorrelation <- subset(reports.7di, tau==7 & bandwidth==35 & rho==1 & is.na(disp))$autocorrelation
-  reports.7di.7dr.imperfect.autocorrelation <- subset(reports.7di, tau==7 & bandwidth==35 & rho== .25 & disp==0.1)$autocorrelation
-
-# # Imperfect Reporting: rho = 0.125, low dispersion = .1  use sample_observations() and specify reporting prob and dispersion
-# reporting_prob <- 0.125
-# dispersion_parameter <- 0.1
-# 
-#     ## aggregate reports ( 7 day reporting period)
-#     tau <- 7  # reporting interval in days
-#     reports.7di.7dr.imperfect <- sample_observation(sim.7di.cases,
-#                                                     sampling_interval = sampling_interval,
-#                                                     tau = tau,
-#                                                     reporting_prob = reporting_prob,
-#                                                     dispersion_parameter = dispersion_parameter)
+  reports.7di.7dr.perfect.autocorrelation <- subset(reports.7di, 
+                                                    tau==7 & bandwidth==35 & rho==1 & is.na(disp))$autocorrelation
+  reports.7di.7dr.imperfect.autocorrelation <- subset(reports.7di, 
+                                                      tau==7 & bandwidth==35 & rho== .25 & disp==0.1)$autocorrelation
     
 # Set plotting window
-plotxmin <- 7*960 # days
-plotxlength <-  7*30 # days
 
-plotxmax <- plotxmin+plotxlength # days
-
-plotymin <- 0
-plotymax <- max(
-  window(reports.7di.7dr.perfect,start=plotxmin,end=plotxmax),
-  window(reports.7di.7dr.imperfect,start=plotxmin,end=plotxmax),
-  window(sim.7di$I,start=plotxmin,end=plotxmax)
-  )
+  plotxmin <- 7*960 # days
+  plotxlength <-  7*30 # days
+  
+  plotxmax <- plotxmin+plotxlength # days
+  
+  plotymin <- 0
+  plotymax <- max(
+    window(reports.7di.7dr.perfect,start=plotxmin,end=plotxmax),
+    window(reports.7di.7dr.imperfect,start=plotxmin,end=plotxmax),
+    window(sim.7di$I,start=plotxmin,end=plotxmax)
+    )
 
 # Y ticks
-y.tick.interval <- 10
-y.ticks <- seq(from = plotymin, to = plotymax, by = y.tick.interval)
+  
+  y.tick.interval <- 10
+  y.ticks <- seq(from = plotymin, to = plotymax, by = y.tick.interval)
 
 ## Visual Variables
-color.7day <- unipalette['lightblue']
-color.7day.imperfect <- unipalette['red']
-color.I <- unipalette['black']
-lty.7day <- "dotted" # for vertical dividers
-lty.30day <- "dashed" # for vertical dividers
-lwd.7day <- 1.5
-lwd.30day <- 3
-lwd.I <- 1
+  
+  color.7day <- unipalette['lightblue']
+  color.7day.imperfect <- unipalette['red']
+  color.I <- unipalette['black']
+  lty.7day <- "dotted" # for vertical dividers
+  lty.30day <- "dashed" # for vertical dividers
+  lwd.7day <- 1.5
+  lwd.30day <- 3
+  lwd.I <- 1
 
 ## About Devices: Plot is made to the PDF device.  After the PDF device is closed, the figure is read in as an image and converted  to PNG.
-# # PDF output
-path <- "./output/plots/fig3.pdf"
-pdf(
-  file = path,
-  title = "Figure 3",
-  width = 7.25, height=3
-  )
+  
+# PDF output
 
-# init plot
-par(mar=c(4,5,1,7.5)+0.1)
+  path <- "./output/plots/fig3.pdf"
+  pdf(
+    file = path,
+    title = "Figure 3",
+    width = 7.25, height=3
+    )
 
-plot(0,0, type='n', axes=FALSE, ann=FALSE, yaxt="n",
-     xlim=c(plotxmin,plotxmax), ylim=c(plotymin,plotymax))
+# plot
+  
+  ## init
+  par(mar=c(4,5,1,7.5)+0.1)
+  plot(0,0, type='n', axes=FALSE, ann=FALSE, yaxt="n",
+       xlim=c(plotxmin,plotxmax), ylim=c(plotymin,plotymax))
 
-# plot time series of number of cases aggregated weekly, with imperfect reporting
-lines(reports.7di.7dr.imperfect, type='s', pch=20, lwd=lwd.7day, col=color.7day.imperfect)
+  ## plot time series of number of cases aggregated weekly, with imperfect reporting
+  lines(reports.7di.7dr.imperfect, type='s', pch=20, lwd=lwd.7day, col=color.7day.imperfect)
+  
+  ## plot time series of true number of cases aggregated weekly
+  lines(reports.7di.7dr.perfect, type='s', pch=20, lwd=lwd.7day, col=color.7day)
+  
+  ## plot time series of number of infected
+  lines(sim.7di$I, type='S', pch=20, lwd=lwd.I, col=color.I) # note: type="S" not "s"
 
-# plot time series of true number of cases aggregated weekly
-lines(reports.7di.7dr.perfect, type='s', pch=20, lwd=lwd.7day, col=color.7day)
-
-# plot time series of number of infected
-lines(sim.7di$I, type='S', pch=20, lwd=lwd.I, col=color.I) # note: type="S" not "s"
-
-# Axes
-axis(side = 1, # 1 specifies bottom axis - minor ticks
-           at = seq(plotxmin-7,plotxmax+7,7), # tick locations (in data units).
-           labels = FALSE, # vector of tick labels
-           las = 1, # label orientation (0:parall., 1:horiz., 2:perp., 3:vert.)
-           tcl = -.5, # tick length (fraction of plot width, neg to draw outside plot)
-           line = .5, # number of lines into margin at which axis is drawn 
-           lty = "solid",
-           lwd = 0, # axis line weight
-           lwd.ticks = 1, # tick line weight
-           col = "grey" # axis line color
-           # col.ticks = NULL, # tick line color
-        )
-tmp.at <- seq(plotxmin,plotxmax+7,28)
-tmp.lab <- (tmp.at-plotxmin)/7
-axis(side = 1, # 1 specifies bottom axis - major ticks
-           at = tmp.at, # tick locations (in data units).
-           labels = tmp.lab,
-           tcl = -1, # tick length (fraction of plot width, neg to draw outside plot)
-           line = .5, # number of lines into margin at which axis is drawn 
-           lty = "solid",
-           lwd = 0, # axis line weight
-           lwd.ticks = 1, # tick line weight
-           col = "grey" # axis line color
-           # col.ticks = NULL, # tick line color
-        )
-
-axis(side = 2, # 1 specifies left axis
-           at = y.ticks, # tick locations (in data units).
-           labels = y.ticks, # vector of tick labels
-           las = 1, # label orientation (0:parall., 1:horiz., 2:perp., 3:vert.)
-           tcl = -.5, # tick length (fraction of plot width, neg to draw outside plot)
-           line = .5, # number of lines into margin at which axis is drawn 
-           lty = "solid",
-           lwd = 0, # axis line weight
-           lwd.ticks = 1, # tick line weight
-           col = "grey" # axis line color
-           # col.ticks = NULL, # tick line color
-        )
-
-# grid lines
-abline(
-  h = y.ticks,
-  col = rgb(0,0,0,.25), 
-  lty = 'solid',
-  lwd = 1
-  )
-
-
-# annotations
-title(ylab = "Number", line = 3)
-title(xlab="Week", line = 2.5)
-
-# Legend
-par(lend="butt")
-legend("topleft", xpd=NA, inset=c(1.01,0), xjust=0, yjust=0, cex=.65, y.intersp = 3.0,
-       legend=c("Number Infected", "Case Reports\n(Perfect Reporting)","Case Reports\n(Imperfect Reporting)"),
-       col=c(color.I,color.7day,color.7day.imperfect),
-       lwd=c(lwd.I,lwd.7day,lwd.7day),
-       lty=1,
-       bty='n')
+  ## Axes
+  axis(side = 1, # 1 specifies bottom axis - minor ticks
+             at = seq(plotxmin-7,plotxmax+7,7), # tick locations (in data units).
+             labels = FALSE, # vector of tick labels
+             las = 1, # label orientation (0:parall., 1:horiz., 2:perp., 3:vert.)
+             tcl = -.5, # tick length (fraction of plot width, neg to draw outside plot)
+             line = .5, # number of lines into margin at which axis is drawn 
+             lty = "solid",
+             lwd = 0, # axis line weight
+             lwd.ticks = 1, # tick line weight
+             col = "grey" # axis line color
+             # col.ticks = NULL, # tick line color
+          )
+  tmp.at <- seq(plotxmin,plotxmax+7,28)
+  tmp.lab <- (tmp.at-plotxmin)/7
+  axis(side = 1, # 1 specifies bottom axis - major ticks
+             at = tmp.at, # tick locations (in data units).
+             labels = tmp.lab,
+             tcl = -1, # tick length (fraction of plot width, neg to draw outside plot)
+             line = .5, # number of lines into margin at which axis is drawn 
+             lty = "solid",
+             lwd = 0, # axis line weight
+             lwd.ticks = 1, # tick line weight
+             col = "grey" # axis line color
+             # col.ticks = NULL, # tick line color
+          )
+  
+  axis(side = 2, # 1 specifies left axis
+             at = y.ticks, # tick locations (in data units).
+             labels = y.ticks, # vector of tick labels
+             las = 1, # label orientation (0:parall., 1:horiz., 2:perp., 3:vert.)
+             tcl = -.5, # tick length (fraction of plot width, neg to draw outside plot)
+             line = .5, # number of lines into margin at which axis is drawn 
+             lty = "solid",
+             lwd = 0, # axis line weight
+             lwd.ticks = 1, # tick line weight
+             col = "grey" # axis line color
+             # col.ticks = NULL, # tick line color
+          )
+  
+  ## grid lines
+  abline(
+    h = y.ticks,
+    col = rgb(0,0,0,.25), 
+    lty = 'solid',
+    lwd = 1
+    )
+  
+  
+  ## annotations
+  title(ylab = "Number", line = 3)
+  title(xlab="Week", line = 2.5)
+  
+  ## Legend
+  par(lend="butt")
+  legend("topleft", xpd=NA, inset=c(1.01,0), xjust=0, yjust=0, cex=.65, y.intersp = 3.0,
+         legend=c("Number Infected", "Case Reports\n(Perfect Reporting)","Case Reports\n(Imperfect Reporting)"),
+         col=c(color.I,color.7day,color.7day.imperfect),
+         lwd=c(lwd.I,lwd.7day,lwd.7day),
+         lty=1,
+         bty='n')
 
 ## Close PDF
 invisible(dev.off())
@@ -946,7 +822,7 @@ image_write(png, path = paste0(path,".", format=targetfmt), format = targetfmt)
 ```
 ![Example of aggregated data with reporting error. Three time series for the same simulated outbreak are shown: the number of infected (black line), weekly aggregated case reports with no reporting error (perfect reporting, blue line) and weekly aggregated case reports with reporting error (imperfect reporting, red line). Reporting error is modelled using a negative binomial distribution with $\rho = 0.25$ and $\phi = 0.1$. The high overdispersion (small $\phi$) means that there is little visual correspondance between the number of case reports with and without reporting error. Additionally, the number of case reports can exceed the true number of cases (overreporting), in spite of the low reporting rate. SIR simulations performed using the same parameters are Fig.~\ref{fig:fig1}](./output/plots/fig3.pdf.png) 
 
-## 4 Panel
+## 4 Panel (not inlcluded in paper)
 
 ```{r eval=FALSE, warning=FALSE, results='hide'}
 # Data
@@ -957,27 +833,29 @@ reports.7di.7dr.hirho.lodisp <- with(reports.7di.7dr, data[rho==0.5 & disp==100]
 reports.7di.7dr.lorho.hidisp <- with(reports.7di.7dr, data[rho==0.03125 & disp==0.01])[[1]]
 reports.7di.7dr.lorho.lodisp <- with(reports.7di.7dr, data[rho==0.03125 & disp==100])[[1]]
 
-# Set plotting window
-plotxmin <- 7*960 # days
-plotxlength <-  7*30 # days
+# Scales and Ranges
 
-plotxmax <- plotxmin+plotxlength # days
+  ## Set plotting window
+  plotxmin <- 7*960 # days
+  plotxlength <-  7*30 # days
+  
+  plotxmax <- plotxmin+plotxlength # days
+  
+  plotymin <- 0
+  plotymax <- max(
+    window(reports.7di.7dr.perfect,start=plotxmin,end=plotxmax),
+    window(reports.7di.7dr.hirho.hidisp,start=plotxmin,end=plotxmax),
+    window(reports.7di.7dr.hirho.lodisp,start=plotxmin,end=plotxmax),
+    window(reports.7di.7dr.lorho.hidisp,start=plotxmin,end=plotxmax),
+    window(reports.7di.7dr.lorho.lodisp,start=plotxmin,end=plotxmax),
+    window(sim.7di$I,start=plotxmin,end=plotxmax)
+    )
+  
+  ## Y ticks
+  y.tick.interval <- 10
+  y.ticks <- seq(from = plotymin, to = plotymax, by = y.tick.interval)
 
-plotymin <- 0
-plotymax <- max(
-  window(reports.7di.7dr.perfect,start=plotxmin,end=plotxmax),
-  window(reports.7di.7dr.hirho.hidisp,start=plotxmin,end=plotxmax),
-  window(reports.7di.7dr.hirho.lodisp,start=plotxmin,end=plotxmax),
-  window(reports.7di.7dr.lorho.hidisp,start=plotxmin,end=plotxmax),
-  window(reports.7di.7dr.lorho.lodisp,start=plotxmin,end=plotxmax),
-  window(sim.7di$I,start=plotxmin,end=plotxmax)
-  )
-
-# Y ticks
-y.tick.interval <- 10
-y.ticks <- seq(from = plotymin, to = plotymax, by = y.tick.interval)
-
-## Visual Variables
+# Visual Variables
 color.7day <- unipalette['lightblue']
 color.7day.imperfect <- unipalette['red']
 color.I <- unipalette['black']
@@ -998,30 +876,33 @@ pdf(
 plot.margins <- c(4,4,1.5,3)+0.1
 par(mfrow=c(2,2))
   
-# Hi Rho, Hi Disp
-par(mar=plot.margins)
-plot(0,0, type='n', axes=FALSE, ann=FALSE, yaxt="n",
-     xlim=c(plotxmin,plotxmax), ylim=c(plotymin,plotymax))
-lines(reports.7di.7dr.hirho.hidisp, type='s', pch=20, lwd=lwd.7day, col=color.7day.imperfect)
-lines(reports.7di.7dr.perfect, type='s', pch=20, lwd=lwd.7day, col=color.7day)
-lines(sim.7di$I, type='S', pch=20, lwd=lwd.I, col=color.I) # note: type="S" not "s"
-axis(side = 1, # 1 specifies bottom axis - minor ticks
-           at = seq(plotxmin-7,plotxmax+7,7), labels = FALSE, 
-           las = 1, tcl = -.5, line = .5, lty = "solid", lwd = 0, lwd.ticks = 1, col = "grey")
-tmp.at <- seq(plotxmin,plotxmax+7,28)
-tmp.lab <- (tmp.at-plotxmin)/7
-axis(side = 1, # 1 specifies bottom axis - major ticks
-           at = tmp.at, labels = tmp.lab,
-           tcl = -1, line = .5,  lty = "solid", lwd = 0, lwd.ticks = 1, col = "grey")
-axis(side = 2, # 1 specifies left axis
-           at = y.ticks, 
-           labels = y.ticks, 
-           las = 1, tcl = -.5, line = .5, lty = "solid", lwd = 0, lwd.ticks = 1, col = "grey")
-abline(h = y.ticks, col = rgb(0,0,0,.25), lty = 'solid', lwd = 1)
-title(ylab = "Number", line = 2.5)
-mtext(text = "High overdispersion", side=3, line=0.5)
+# Plot
+
+  ## Hi Rho, Hi Disp
+  par(mar=plot.margins)
+  plot(0,0, type='n', axes=FALSE, ann=FALSE, yaxt="n",
+       xlim=c(plotxmin,plotxmax), ylim=c(plotymin,plotymax))
+  lines(reports.7di.7dr.hirho.hidisp, type='s', pch=20, lwd=lwd.7day, col=color.7day.imperfect)
+  lines(reports.7di.7dr.perfect, type='s', pch=20, lwd=lwd.7day, col=color.7day)
+  lines(sim.7di$I, type='S', pch=20, lwd=lwd.I, col=color.I) # note: type="S" not "s"
+  axis(side = 1, # 1 specifies bottom axis - minor ticks
+             at = seq(plotxmin-7,plotxmax+7,7), labels = FALSE, 
+             las = 1, tcl = -.5, line = .5, lty = "solid", lwd = 0, lwd.ticks = 1, col = "grey")
+  tmp.at <- seq(plotxmin,plotxmax+7,28)
+  tmp.lab <- (tmp.at-plotxmin)/7
+  axis(side = 1, # 1 specifies bottom axis - major ticks
+             at = tmp.at, labels = tmp.lab,
+             tcl = -1, line = .5,  lty = "solid", lwd = 0, lwd.ticks = 1, col = "grey")
+  axis(side = 2, # 1 specifies left axis
+             at = y.ticks, 
+             labels = y.ticks, 
+             las = 1, tcl = -.5, line = .5, lty = "solid", lwd = 0, lwd.ticks = 1, col = "grey")
+  abline(h = y.ticks, col = rgb(0,0,0,.25), lty = 'solid', lwd = 1)
+  title(ylab = "Number", line = 2.5)
+  mtext(text = "High overdispersion", side=3, line=0.5)
 
 # Hi Rho, Lo Disp
+  
 par(mar=plot.margins)
 plot(0,0, type='n', axes=FALSE, ann=FALSE, yaxt="n",
      xlim=c(plotxmin,plotxmax), ylim=c(plotymin,plotymax))
