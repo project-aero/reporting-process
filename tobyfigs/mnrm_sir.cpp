@@ -169,7 +169,7 @@ while(r<runs)
 	
 
 	//Initialisation of internal Poisson processes and internal clocks:
-	for(int k = 0; k < a_no; k++){ P[k] = -log((double)rand()/RAND_MAX); T[k] = 0;}
+	for(int k = 0; k < a_no; k++){ P[k] = -log(gsl_rng_uniform_pos(rng)); T[k] = 0;}
 	
 	//Array of fluctuations about the deterministic fixed point:
 	while(q < L)
