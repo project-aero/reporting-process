@@ -92,7 +92,9 @@ int main(int argc, const char* argv[])
 	double runs = 1;
 	int L = 52*100;
 	double null_param = 0;
-
+	srand (time(NULL));
+	
+	
 	if(argc > 1)runs = atoi(argv[1]);
 	else cerr << "# No value for runs given, default used: runs = 1" << endl;
 	if(argc > 2)N = atoi(argv[2]);
@@ -107,7 +109,6 @@ int main(int argc, const char* argv[])
 	else cerr << "# No value for infectious period, default used: -weekly" << endl;
 
 	beta = R0*(gamm +mu);
-  	srand (time(NULL));
 	gsl_rng * rng = gsl_rng_alloc (gsl_rng_taus);	
 	gsl_rng_set (rng, rand());
 
