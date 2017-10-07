@@ -208,6 +208,7 @@ heat_map_plot <- function(bw){
               ylab="", axes=F, useRaster = T)
   axis(1, at=seq(0.0,1,0.2), labels=seq(0.0,1,0.2), col.ticks = gray_colour, col = "white", pos = -1.5)
   mtext(side=1, "AUC", line=3)
+  dev.off()
 }
 
 heat_map_plot(35)
