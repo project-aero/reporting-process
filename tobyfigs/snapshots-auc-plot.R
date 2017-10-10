@@ -5,7 +5,7 @@ library(tidyverse)
 library(reshape2)
 library(colorspace)
 
-auc_data <- read.csv("prevalence_auc.csv")
+auc_data <- read.csv("snapshots-auc.csv")
 auc_data$`Infectious period` <- as.factor(auc_data$Infectious.period)
 levels(auc_data$`Infectious period`) <- c(expression(paste(gamma, "=1/30")),expression(paste(gamma, "=1/7")))
 
@@ -79,6 +79,6 @@ auc_plot(auc_data) +
         plot.margin = unit(c(1,1,1,1), "cm"))
 
 
-ggsave("prevalence_auc.pdf",width =1.2*8.64,height=1.2*4.20)
+ggsave("snapshots-auc.pdf",width =1.2*8.64,height=1.2*4.20)
 
 

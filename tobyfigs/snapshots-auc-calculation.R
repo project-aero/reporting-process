@@ -2,7 +2,7 @@
 library(tidyverse)
 library(reshape2)
 
-##Used to calculate AUC directly from prevalence data.
+##Used to calculate AUC directly from snapshots data.
 
 
 #load simulated cases
@@ -120,4 +120,4 @@ calculate_auc <- function(infectious_period){
 
 auc_data <- do.call(rbind,lapply(c("-weekly", "-monthly"),calculate_auc))
 
-write_csv(auc_data,"prevalence_auc.csv")
+write_csv(auc_data,"snapshots-auc.csv")
