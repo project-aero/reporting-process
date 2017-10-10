@@ -5,7 +5,6 @@ library(colorspace)
 library(lattice)
 library(fields)
 library(dplyr)
-library(Hmisc)
 
 
 ## Eric's AUC gradient ##
