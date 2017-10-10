@@ -1,27 +1,18 @@
-This subdirectory contains files used to produce simulation results as
-well as the simulation results that were used to generate the figures
-in the paper. The latter is contained in the zip archive
-``work-2017-08-29_17-29-29-light.zip``. Scripts used to generate the
-results as well as some other non-essential but related scripts are in
-``src``.
+The ``simulation`` subdirectory contains:
+1) simulation results used to generate the figures in the paper contained in the zip archive
+``work-2017-08-29_17-29-29-light.zip``. 
+2) All scripts used to generate the simulation results in the directory ``src``.
+3) Docker files (see below)
+4) A copy of the R package spaero
+5) Some additional non-essential but related scripts in ``src``.
 
-To enhance reproduciblity, the scripts were run within a
-Docker container based on an image that is available on Docker
-Hub. The file ``build-image`` was used to create the image based on
-the ``Dockerfile``. On systems with Docker installed, when the bash
-script ``run-scripts`` is run, it should pull the Docker container
-down from Docker Hub and run the Makefile in ``src`` within the
-container to reproduce the full simulation results. Note that the
-script is meant to be run from the parent directory to ``src`` and it
-will create a time-stamped child directory containing the simulation
-output. This output includes many intermediate results that were
-removed from the previously-mentioned zip archive to make its size
-suitable for distribution. The script ``src/make-light.sh`` was used
-to generate this lighter version of the results.
+To facilitate reproducibility, the scripts were run within a Docker container based on an image that is available on Docker Hub. The file ``build-image`` was used to create the image based on
+the ``Dockerfile``. To reproduce the results on systems with Docker installed, run the bash script ``run-scripts`` the ``simulation`` subdirectory. This script will:
 
-It is also possible to run the scripts without Docker, although one
-might have to consult the Docker image to determine the correct
-versions of the software to use. One important dependency, the spaero
-R package for calculating the moving window statistics, is included in
-this subdirectory. The right sequence in which the scripts must be run
-to produce the results can be seen in ``src/Makefile``.
+1) Pull the Docker container down from Docker Hub and create a time-stamped child directory 
+2) Run the Makefile in ``src`` to reproduce the full simulation results in the time-stamped child directory
+
+Reproducing the full output is computationally intensive and not recommended on a desktop computer. The full output comes to about 30GB and includes many intermediate results which are not needed to recreate the figures. The script ``src/make-light.sh`` is included to generate a lighter compressed zip version of the results and only includes the data necessary for figures.
+
+It is also possible to run the scripts without Docker, although one might have to consult the Docker image to determine the correct software versions to use. One important dependency, the spaero
+R package for calculating the moving window statistics, is included in this subdirectory. The right sequence in which the scripts must be run to produce the results can be seen in ``src/Makefile``.
