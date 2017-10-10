@@ -2,47 +2,43 @@
 library(tidyverse)
 library(reshape2)
 
-##Used to calculate AUC directly from prevalence data. 
+##Used to calculate AUC directly from prevalence data.
 
 
-#Compile simulator
-system("g++ mnrm_sir.cpp -o ./sir_sim -lgsl -lgslcblas")
-sir_command_root <- "./sir_sim 1000 1000000 20 3"
+#load simulated cases
+load("cases.RData")
 
 #Calculate EWS for times series data using spaero
-get_ews <- function(df){
-  
-  ## Wrapper for spaero::get_stats, sets function variables and returns only stats as a data frame. 
+get_ews <- function(emerge){
+
+  ## Wrapper for spaero::get_stats, sets function variables and returns only stats as a data frame.
   #spaero parameters are hardcoded in here
   ews <- function(x){
     return(
       as.data.frame(spaero::get_stats(x, center_trend ="local_constant",
                                       center_kernel = "uniform",
-                                      center_bandwidth =35, 
-                                      stat_trend = "local_constant", 
+                                      center_bandwidth =35,
+                                      stat_trend = "local_constant",
                                       stat_kernel = "uniform",
-                                      stat_bandwidth=35, 
+                                      stat_bandwidth=35,
                                       lag = 1)$stats)
     )
   }
-  
-  emerge <- df
-  names(emerge) <- c("Time", "Infected", "R0", "N", "T", "Run")
-  
+
   emerge %>%
-    group_by(Run) %>%
-    do(ews = ews(.$Infected)) -> a
+    group_by(sim) %>%
+    do(ews = ews(.$I)) -> a
   bind_rows(a$ews) -> b
   emerge_ews <- cbind(emerge,b)
 }
 
 #calculate taus
 get_taus <- function(df){
-  df <- melt(df, id.vars = names(df)[1:6]) 
+  df <- melt(df, id.vars = c("time", "S", "I", "R", "N", "cases", "beta_t", "sim"))
   df %>%
-    group_by(variable, Run) %>%
-    summarise(tau = stats::cor(value,Time, use="pairwise.complete.obs", method="kendall")) -> taus
-  return(taus) 
+    group_by(variable, sim) %>%
+    summarise(tau = stats::cor(value,time, use="pairwise.complete.obs", method="kendall")) -> taus
+  return(taus)
 }
 
 #calculate AUC
@@ -60,17 +56,17 @@ get_auc <- function(df){
   df %>%
     group_by(variable) %>%
     summarise(AUC = calc_auc(tau, isnull)) -> out
-  
-  new_levels <-  c("Mean", "Variance", "Var. 1st Diff", 
+
+  new_levels <-  c("Mean", "Variance", "Var. 1st Diff",
                    "Index of Dis.", "Autocovar.", "Autocorr.",
                    "Decay time", "Coeff. Var", "Skewness",
                    "Kurtosis")
   out$variable <- factor(out$variable,levels(out$variable)[c(6,1,2,7,3,4,5,8,9,10)])
   #names(new_levels) <- levels(out$variable)
   levels(out$variable) <- new_levels
-  
-  
-  
+
+
+
   return(out)
 }
 
@@ -80,19 +76,30 @@ get_auc <- function(df){
 #Simulates 1000 replicates, N=1e6, 20yrs of data, rng seed = 1
 
 calculate_auc <- function(infectious_period){
-  
-  sir_command <- paste(sir_command_root,c("-e","-n"),infectious_period)
-  emerge_data <- read.table(text = system(sir_command[1], intern = TRUE))
-  null_data <- read.table(text = system(sir_command[2], intern = TRUE))
-  
+
+  if (infectious_period == "-weekly"){
+    i <- which(dplyr::near(process_des_mat$infectious_days, 7))
+  } else {
+    i <- which(dplyr::near(process_des_mat$infectious_days, 30))
+  }
+  emerge_data <- simulated_procs[[i]]$test
+  null_data <- simulated_procs[[i]]$null
+
   calculate_auc_agg <- function(aggregation_period){
     edf <- emerge_data
     ndf <- null_data
-    if(aggregation_period == "-monthly"){
-      edf <-  edf[edf$V1 %% 4 == 0, ]
-      ndf <-  ndf[ndf$V1 %% 4 == 0, ]
+    is_snap <- function(x, period){
+      mod <- x %% period
+      dplyr::near(mod, 0)
     }
-    
+    if(aggregation_period == "-monthly"){
+      per <- 30
+    } else {
+      per <- 7
+    }
+    edf <- edf[is_snap(edf$time, per), ]
+    ndf <- ndf[is_snap(ndf$time, per), ]
+
     emerge_ews <- get_ews(edf)
     not_ews <- get_ews(ndf)
     taus_test <- get_taus(emerge_ews)
@@ -100,7 +107,7 @@ calculate_auc <- function(infectious_period){
     taus_test$isnull <- FALSE
     taus_null$isnull <- TRUE
     taus <- rbind(taus_test, taus_null)
-    
+
     df <- get_auc(taus)
     df$`Infectious period` <- as.factor(infectious_period)
     df$`Aggregation period` <- as.factor(aggregation_period)
