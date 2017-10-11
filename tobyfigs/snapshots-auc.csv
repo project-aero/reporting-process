@@ -1,0 +1,41 @@
+variable,AUC,Infectious period,Aggregation period
+Variance,1,-weekly,-weekly
+Var. 1st Diff,0.97501,-weekly,-weekly
+Autocovar.,1,-weekly,-weekly
+Autocorr.,0.999677,-weekly,-weekly
+Decay time,0.999677,-weekly,-weekly
+Mean,1,-weekly,-weekly
+Index of Dis.,0.999993,-weekly,-weekly
+Coeff. Var,0.179537,-weekly,-weekly
+Skewness,0.489022,-weekly,-weekly
+Kurtosis,0.444602,-weekly,-weekly
+Variance,0.999798,-weekly,-monthly
+Var. 1st Diff,0.9969355,-weekly,-monthly
+Autocovar.,0.9749975,-weekly,-monthly
+Autocorr.,0.9436765,-weekly,-monthly
+Decay time,0.946374245472837,-weekly,-monthly
+Mean,0.999709,-weekly,-monthly
+Index of Dis.,0.9959355,-weekly,-monthly
+Coeff. Var,0.513333,-weekly,-monthly
+Skewness,0.613984,-weekly,-monthly
+Kurtosis,0.603714,-weekly,-monthly
+Variance,0.999835,-monthly,-weekly
+Var. 1st Diff,0.912403,-monthly,-weekly
+Autocovar.,0.999702,-monthly,-weekly
+Autocorr.,0.9534735,-monthly,-weekly
+Decay time,0.9534735,-monthly,-weekly
+Mean,0.999998,-monthly,-weekly
+Index of Dis.,0.97325,-monthly,-weekly
+Coeff. Var,0.052677,-monthly,-weekly
+Skewness,0.4368965,-monthly,-weekly
+Kurtosis,0.344703,-monthly,-weekly
+Variance,0.999623,-monthly,-monthly
+Var. 1st Diff,0.987731,-monthly,-monthly
+Autocovar.,0.99791,-monthly,-monthly
+Autocorr.,0.9629065,-monthly,-monthly
+Decay time,0.9628425,-monthly,-monthly
+Mean,0.99998,-monthly,-monthly
+Index of Dis.,0.9887905,-monthly,-monthly
+Coeff. Var,0.469341,-monthly,-monthly
+Skewness,0.5989215,-monthly,-monthly
+Kurtosis,0.5566645,-monthly,-monthly
