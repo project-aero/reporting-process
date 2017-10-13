@@ -1,3 +1,5 @@
+# This script assumes the working directory is set to "eric-figs/"
+
 # Random Number Generator state recall in a robust, portable way, for reproducibility
 
 # Restore random number generator state from file
@@ -65,16 +67,12 @@ class(sim.7di.I) <- c("tbl_df", "data.frame")
 ## resample and get stats, save results in nested dataframe
 tmpfnc <- function(params) {
   i <- params['id']
-  cat(paste("sim.7di.I: row", i, "of", nrow(tmpgrid), "\n"))
   analysis_params$center_bandwidth <- analysis_params$stat_bandwidth <- params['bandwidth']
   analysis_params$lag <- params['lag']
   # Resample data, calc stats
   tmp.ts <- data[data$time %in% seq(0,max(data$time),params['resampling_interval']),]
   tmp.ts.zoo <- zoo(tmp.ts$I,tmp.ts$time)
   tmp.stats <- analysis(tmp.ts.zoo,analysis_params)
-  tmp.stats.zoo <- zooreg(as.data.frame(tmp.stats$stats), start=0, deltat = params['resampling_interval'])
-  tmp.taus <- as.data.frame(tmp.stats$taus)
-  tmp.statstest <- analysis(tmp.ts$I,analysis_params)
   tmp.stats.zoo <- zooreg(as.data.frame(tmp.stats$stats), start=0, deltat = params['resampling_interval'])
   tmp.taus <- as.data.frame(tmp.stats$taus)
   sim.7di.I[i,] <<- list(
@@ -101,13 +99,13 @@ tmpgrid <- rbind(
 )
 tmpgrid <- cbind(id=as.integer(rownames(tmpgrid)), tmpgrid)
 data <- sim.7di # data used by tmpfunction
-apply(tmpgrid, MARGIN=1, tmpfnc) # get stats
+
+# do simulation
+start.time <- proc.time()
+cat("About to write to sim.7di.I (this may take a few minutes)...\n")
+invisible(apply(tmpgrid, MARGIN=1, tmpfnc)) # get stats
 save(sim.7di.I,file="./output/data/sim.7di.I.Rda")
-
-
-## also look at cluster: https://gist.github.com/mbjoseph/c2bf86f7158cdfafb8dcdb3c5cc72f20
-## also look at aemon's cluster code
-
+cat("sim.7di.I saved to ./output/data/sim.7di.I.Rda\n","elapsed time =",as.numeric((proc.time()-start)[3]),"seconds")
 
 # Reporting:
 
@@ -122,7 +120,6 @@ class(reports.7di) <- c("tbl_df", "data.frame")
 ## aggregate cases and get stats, save results in nested dataframe
 tmpfnc <- function(params) {
   i <- params['id']
-  cat(paste("reports.7di: row", i, "of", nrow(tmpgrid), "\n"))
   analysis_params$center_bandwidth <- analysis_params$stat_bandwidth <- params['bandwidth']
   analysis_params$lag <- params['lag']
   # aggregate
@@ -180,6 +177,9 @@ tmpgrid <- cbind(id=as.integer(rownames(tmpgrid)), tmpgrid)
 data <- sim.7di.cases # data used by tmpfnc
 
 # do imperfect reporting
-apply(tmpgrid, MARGIN=1, tmpfnc)
+start.time <- proc.time()
+cat("About to write reports.7di (this may take a few minutes)... \n")
+invisible(apply(tmpgrid, MARGIN=1, tmpfnc))
 save(reports.7di,file="./output/data/reports.7di.Rda")
+cat("reports.7di saved to ./output/data/reports.7di.Rda\n","elapsed time =",as.numeric((proc.time()-start)[3]),"seconds")
 
