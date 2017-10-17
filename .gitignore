@@ -32,3 +32,7 @@ vignettes/*.pdf
 *.utf8.md
 *.knit.md
 .Rproj.user
+
+# Packrat
+eric-figs/packrat/lib*/
+eric-figs/packrat/src
