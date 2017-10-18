@@ -36,3 +36,7 @@ vignettes/*.pdf
 # Packrat
 eric-figs/packrat/lib*/
 eric-figs/packrat/src
+
+# Ignored folders
+eric-figs/sketches/
+eric-figs/design/
