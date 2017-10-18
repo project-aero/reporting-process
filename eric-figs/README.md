@@ -6,7 +6,7 @@ Created directory ```eric-figs/``` contains code and output for figures 1, 2, an
 
 ```eric-figs/data/``` contains source data files, in this case consisting of saved snapshots of the complete description of the random number generator state, required to reproduce simulations and figures exactly. R rscripts 
  
-```eric-figs/design/``` will contain Illustrator files under Git LFS version control (see below).
+```eric-figs/design/``` will contain Illustrator files under Git LFS version control (see below). **Note: This directory has now been removed from the repository, as it is not needed for this project**
 
 ```eric-figs/images/``` will contain print-ready images exported from Illustrator
 
@@ -18,7 +18,7 @@ Created directory ```eric-figs/``` contains code and output for figures 1, 2, an
 
 ```eric-figs/R/``` contains help R script(s)
 
-```eric-figs/sketches/``` contains unfinished R experiments or notes, not to be included in final released materials.
+```eric-figs/sketches/``` contains unfinished R experiments or notes, not to be included in final released materials. **Note: This directory has now been removed from the repository, as it is no longer needed for this project.**
 
 Top level code is in ```eric-figs/ReportingProcess-ericfigs.Rmd```, which calls helper scripts, loads all required packages including custom SPAERO version, and outputs figures.  *Since the working directory for R code chunks inside an .Rmd is forced to the directory of the .Rmd document itself, the working directory does not need to be set before previewing the .Rmd or running chunks, so long as the directory structure relative to the .Rmd document is preserved.* 
 
