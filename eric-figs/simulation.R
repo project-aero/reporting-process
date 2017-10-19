@@ -1,5 +1,9 @@
 # This script assumes the working directory is set to "eric-figs/"
 
+# Dependencies and helper functions in header.R
+
+source("./R/header.R")
+
 # Random Number Generator state recall in a robust, portable way, for reproducibility
 
 # Restore random number generator state from file
