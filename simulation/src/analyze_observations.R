@@ -11,7 +11,7 @@ load("checkpoint-02.rda")
 
 levs <- list()
 levs$bandwidth <- c(35, 100)
-levs$lag <- 1
+levs$lag <- c(1)
 analysis_des_mat <- do.call(expand.grid, levs)
 
 calc_auc <- function(predictions, is_null){
@@ -92,3 +92,5 @@ for (i in seq(1, nrow(process_des_mat))){
 res <- do.call(rbind, res)
 
 save.image(file="checkpoint-03.rda")
+
+save(res, file="res.RData")

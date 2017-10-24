@@ -17,3 +17,4 @@ docker run -v ${ddir}:${hdir}/data:ro \
        --user docker -w ${hdir}/work \
        eamon/2016feasibility:v20170829 /bin/bash -c "make -f ../src/Makefile"
 chown -R $(id -u):$(id -g) ${wkdir}
+outputdir=${wkdir} src/make-light.sh
