@@ -89,17 +89,16 @@ cluster <- parallel_setup(is_small = is_small_scale)
 load("checkpoint-02.rda")
 options <- list(preschedule = FALSE) # To keep results <2GB limit
 
+soit <- iterators::iter(simulated_observations)
+
 analyzed_observations <-
-  foreach (i=seq(1, nrow(process_des_mat)),
-           .options.snow = options)) %:%
-    foreach (j=seq(1, nrow(observation_des_mat)),
-             .options.snow = options) %:%
-      foreach (m=seq(1, nrow(analysis_des_mat)),
+  foreach (so = soit, .options.snow = options) %:%
+    foreach (so2 = iterators::iter(so), .options.snow = options) %:%
+      foreach (m = iterators::iter(analysis_des_mat, by = "row"),
                .options.snow = options) %dopar% {
                  do.call(analyze_observations,
-                         c(analysis_des_mat[m, ],
-                           list(obs=simulated_observations[[i]][[j]])))
-    }
+                         c(m, list(obs = so2)))
+               }
 warnings()
 
 parallel::stopCluster(cluster)
