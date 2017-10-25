@@ -67,6 +67,21 @@ lwd.30day <- 1.5
 lwd.I <- .5
 lwd.crit <- 4
 
+# Typography
+
+font.family <- "Times"
+font.sizes <- seq(from = 8, # publisher's minimum point size (points)
+                  to = 12, # publisher's maximum point size (points) 
+                  length.out = 5)
+font.size.normal <- mean(font.sizes)
+font.scales <- font.sizes/mean(font.sizes)
+names(font.scales) <- names(font.sizes) <- c("XS", "S", "M", "L", "XL")
+
+# Figure dimensions
+
+figure.widths <- c(min=2.63, page=7.5, column=5.2) # in inches, as defined by publisher
+figure.heights <- c(min=1, page=8.75) # in inches, as defined by publisher
+
 # Margins and Figure Bounds
 
 margins = c(4,5,4,8)+0.1
@@ -76,8 +91,11 @@ bottom.pannel <- c(0,1,0,.65) # panel bounds: x0,x1,y0,y1 as fraction of figure 
 # PDF output
 pdf(
   file = "./output/plots/fig1.pdf",
-  title = "Figure 1",
-  width = 7.25, height=6
+  title = "Figure 1", # displayed in title bar of PDF Reader
+  width = figure.widths['page'], # inches.  Must fit publisher's min and max figure dimensions
+  height = figure.heights['page']*.7, # inches.  Must fit publisher's min and max figure dimensions
+  family = font.family, 
+  pointsize = font.size.normal # default size of text (points).
 )
 
 # init figure
@@ -111,7 +129,7 @@ title(ylab="Autocorrelation", line = 3)
 text(x=19.75*365,
      y=c(.925,.3,-.1),
      adj=1,
-     cex=.65,
+     cex=font.scales['M'],
      col=c(color.7day.snap,
            color.7day.imperfect,
            color.30day.imperfect),
@@ -163,7 +181,7 @@ axis(side = 2, # 1 specifies left axis
 mtext(text="Year", side=3, line = 2.5)
 
 ## Legend
-legend("topleft", xpd=NA, inset=c(1.01,0), xjust=0, yjust=0, cex=.65, y.intersp = 3,
+legend("topleft", xpd=NA, inset=c(1.01,0), xjust=0, yjust=0, cex=font.scales['XS'], y.intersp = 3,
        legend=c(
          "Weekly Snapshots\nof Number Infected", 
          "Weekly Reports", 
@@ -193,9 +211,13 @@ plot(0,0, type='n', axes=FALSE, ann=FALSE, yaxt="n",
 ## plot time series of weekly snapshots of number infected
 poly <- data.7day.snap$data[[1]]
 x <- time(poly)
-y <- poly
+y <- as.numeric(poly)
 poly.x <- c(head(x,1),x,tail(x,1))
-poly.y <- c(0,y,0)
+# poly.y <- c(0,y,0)
+poly.x <- c(rbind(x,x)) ## double each time
+poly.y <- c(0,
+            c(rbind(y[2:length(y)],y[2:length(y)])),
+            0)
 polygon(x=poly.x,y=poly.y, lwd=.1, border=color.7day.snap, col=color.7day.snap.fill)
 
 ## plot time series of cases, aggregated Weekly (imperfect reporting), filled staircase
@@ -254,11 +276,11 @@ abline(
 title(ylab = "Number", line = 3)
 title(xlab = "Year", line = 2.5)
 
-text(365*20, plotymax, xpd=NA, cex=.75, labels="epidemic threshold", adj=c(1,1.5), srt=90, col=color.crit)
+text(365*20, plotymax, xpd=NA, cex=font.scales['M'], labels="epidemic threshold", adj=c(1,1.5), srt=90, col=color.crit)
 
 ## Legend
 par(lend="butt")
-legend("topleft", xpd=NA, inset=c(1.01,0), xjust=0, yjust=0, cex=.65, y.intersp = 1.5,
+legend("topleft", xpd=NA, inset=c(1.01,0), xjust=0, yjust=0, cex=font.scales['XS'], y.intersp = 1.5,
        legend=c(
          "Weekly Snapshots\nof Number Infected", 
          "Weekly Reports", 

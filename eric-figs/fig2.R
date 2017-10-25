@@ -94,22 +94,37 @@ lwd.I <- 1
 dividers.7day <- list(v=windows.7day, col=color.7day, lty=lty.7day, lwd=lwd.7day, xpd=FALSE)
 dividers.30day <- list(v=windows.30day, col=color.30day, lty=lty.30day, lwd=lwd.30day, xpd=FALSE)
 
+# Typography
+
+font.family <- "Times" # PLOS publications require either Times, Arial or Symbol.  only Times is included in R
+font.sizes <- seq(from = 8, # publisher's minimum point size (points)
+                  to = 12, # publisher's maximum point size (points) 
+                  length.out = 5)
+font.size.normal <- mean(font.sizes)
+font.scales <- font.sizes/mean(font.sizes)
+names(font.scales) <- names(font.sizes) <- c("XS", "S", "M", "L", "XL")
+
+# Figure dimensions
+
+figure.widths <- c(min=2.63, page=7.5, column=5.2) # in inches, as defined by publisher
+figure.heights <- c(min=1, page=8.75) # in inches, as defined by publisher
+
 # Margins and Figure Bounds
 
-margins = c(4,5,3.5,7)+0.1
+margins = c(4,5,4,8)+0.1
 bottom.pannel.height <- .75
 bottom.pannel <- c(0,1,0,bottom.pannel.height) # panel bounds: x0,x1,y0,y1 as fraction of figure region
 top.pannel <- c(0,1,bottom.pannel.height-.2,1) # panel bounds: x0,x1,y0,y1 as fraction of figure region
 
-## About Devices: Plot is made to the PDF device.  After the PDF device is closed, the figure is read in as an image and converted  to PNG.
-
 # PDF output
 
-path <- "./output/plots/fig2.pdf"
 pdf(
-  file = path,
-  title = "Figure 2 (version 2)",
-  width = 5.25, height=6
+  file = "./output/plots/fig2.pdf",
+  title = "Figure 2", # displayed in title bar of PDF Reader
+  width = figure.widths['column'], # inches.  Must fit publisher's min and max figure dimensions
+  height = figure.heights['page']*.7, # inches.  Must fit publisher's min and max figure dimensions
+  family = font.family, 
+  pointsize = font.size.normal # default size of text (points).
 )
 
 # init figure
@@ -278,7 +293,7 @@ title(ylab = "Number", line = 3)
 
 ## Legend
 par(lend="butt")
-legend("topleft", xpd=NA, inset=c(1.01,0), xjust=0, yjust=0, cex=.65, y.intersp = 1.5,
+legend("topleft", xpd=NA, inset=c(1.01,0), xjust=0, yjust=0, cex=font.scales["XS"], y.intersp = 1.5,
        legend=c("Daily Snapshots\nof Number Infected", "Weekly Reports","Monthly Reports"),
        col=c(color.I,color.7day,color.30day),
        lwd=c(lwd.I,lwd.7day,lwd.30day),

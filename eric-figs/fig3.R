@@ -59,6 +59,25 @@ lwd.7day <- 1.5
 lwd.30day <- 3
 lwd.I <- 1
 
+# Typography
+
+font.family <- "Times"
+font.sizes <- seq(from = 8, # publisher's minimum point size (points)
+                  to = 12, # publisher's maximum point size (points) 
+                  length.out = 5)
+font.size.normal <- mean(font.sizes)
+font.scales <- font.sizes/mean(font.sizes)
+names(font.scales) <- names(font.sizes) <- c("XS", "S", "M", "L", "XL")
+
+# Figure dimensions
+
+figure.widths <- c(min=2.63, page=7.5, column=5.2) # in inches, as defined by publisher
+figure.heights <- c(min=1, page=8.75) # in inches, as defined by publisher
+
+# Margins and Figure Bounds
+
+margins = c(4,5,1,8.5)+0.1
+
 ## About Devices: Plot is made to the PDF device.  After the PDF device is closed, the figure is read in as an image and converted  to PNG.
 
 # PDF output
@@ -67,13 +86,17 @@ path <- "./output/plots/fig3.pdf"
 pdf(
   file = path,
   title = "Figure 3",
-  width = 7.25, height=3
+  width = figure.widths['column'], # inches.  Must fit publisher's min and max figure dimensions
+  height = figure.heights['page']*.35, # inches.  Must fit publisher's min and max figure dimensions
+  family = font.family, 
+  pointsize = font.size.normal # default size of text (points).
 )
 
-# plot
+## init figure
+par(mar=margins)
+par(lend="butt")
 
-## init
-par(mar=c(4,5,1,7.5)+0.1)
+# init plot 
 plot(0,0, type='n', axes=FALSE, ann=FALSE, yaxt="n",
      xlim=c(plotxmin,plotxmax), ylim=c(plotymin,plotymax))
 
@@ -137,7 +160,7 @@ title(xlab="Week", line = 2.5)
 
 ## Legend
 par(lend="butt")
-legend("topleft", xpd=NA, inset=c(1.01,0), xjust=0, yjust=0, cex=.65, y.intersp = 3.0,
+legend("topleft", xpd=NA, inset=c(1.01,0), xjust=0, yjust=0, cex=font.scales['XS'], y.intersp = 3.0,
        legend=c("Daily Snapshots\nof Number Infected", 
                 "Case Reports\n(Perfect Reporting)",
                 "Case Reports\n(Imperfect Reporting)"),
