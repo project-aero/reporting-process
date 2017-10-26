@@ -149,12 +149,6 @@ Source: CRAN
 Version: 1.10.4-2
 Hash: ed54dbec3394d9a8e8fd3c02d94380a5
 
-Package: data.tree
-Source: CRAN
-Version: 0.7.3
-Hash: 793fa763f332bf329aef223507be217d
-Requires: DiagrammeR, R6, stringr
-
 Package: deSolve
 Source: CRAN
 Version: 1.20
@@ -326,12 +320,6 @@ Source: CRAN
 Version: 0.9-35
 Hash: 370fc77c3949074497a1dac38180b4a9
 Requires: zoo
-
-Package: magick
-Source: CRAN
-Version: 1.4
-Hash: fd28ee9e58237e179e80546364f95008
-Requires: Rcpp, curl, magrittr
 
 Package: magrittr
 Source: CRAN
