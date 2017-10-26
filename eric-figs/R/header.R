@@ -9,8 +9,6 @@ library(zoo)
 library(reshape)
 library(magrittr)
 library(latex2exp) # used to include LaTeX expressions in plot text
-library(data.tree) # to document project folder structure
-library(magick) # for conversion of vector plots to bitmap images
 library(pomp) # required by spaero
 library(spaero) # model simulation and statistics
 
