@@ -1,4 +1,17 @@
 #!/usr/bin/bash
 
 cp /mnt/input/*.R .
-cp *.R /mnt/output
+cp -r /mnt/input/data .
+cp -r /mnt/input/R .
+mkdir /mnt/output/data
+mkdir /mnt/output/plots
+mkdir output
+cd output
+ln -s /mnt/output/data .
+ln -s /mnt/output/plots .
+cd ..
+ls -lR > ./output/data/container-file-tree
+Rscript ./simulation.R
+Rscript ./fig1.R
+Rscript ./fig2.R
+Rscript ./fig3.R

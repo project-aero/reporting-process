@@ -109,7 +109,7 @@ start.time <- proc.time()
 cat("About to write to sim.7di.I (this may take a few minutes)...\n")
 invisible(apply(tmpgrid, MARGIN=1, tmpfnc)) # get stats
 save(sim.7di.I,file="./output/data/sim.7di.I.Rda")
-cat("sim.7di.I saved to ./output/data/sim.7di.I.Rda\n","elapsed time =",as.numeric((proc.time()-start)[3]),"seconds")
+cat("sim.7di.I saved to ./output/data/sim.7di.I.Rda\n","elapsed time =",as.numeric((proc.time()-start.time)[3]),"seconds")
 
 # Reporting:
 
@@ -185,5 +185,5 @@ start.time <- proc.time()
 cat("About to write reports.7di (this may take a few minutes)... \n")
 invisible(apply(tmpgrid, MARGIN=1, tmpfnc))
 save(reports.7di,file="./output/data/reports.7di.Rda")
-cat("reports.7di saved to ./output/data/reports.7di.Rda\n","elapsed time =",as.numeric((proc.time()-start)[3]),"seconds")
+cat("reports.7di saved to ./output/data/reports.7di.Rda\n","elapsed time =",as.numeric((proc.time()-start.time)[3]),"seconds")
 
