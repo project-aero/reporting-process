@@ -1,0 +1,1 @@
+docker build -t eamon/reporting-proc-eric-figs:v20171027 .

@@ -1,0 +1,6 @@
+.git
+./data/*
+./ouput/*
+./packrat/lib*/*
+./packrat/bundles/*
+./packrat/src/*
