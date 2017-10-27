@@ -1,0 +1,18 @@
+#!/bin/bash
+
+set -e
+
+topd=$(pwd)
+tstamp=$(date +%Y-%m-%d_%H-%M-%S)
+outdir="${topd}/work-${tstamp}"
+indir="${topd}"
+hdir="/root"
+
+mkdir ${outdir}
+chmod 757 ${outdir}
+docker run -v ${indir}:/mnt/input:ro \
+       -v ${outdir}:/mnt/output \
+       -w ${hdir}/work \
+       eamon/reporting-proc-eric-figs:v20171027 /bin/bash -c "./copy-and-run"
+chown -R --reference $0 ${outdir}
+chmod 755 ${outdir}

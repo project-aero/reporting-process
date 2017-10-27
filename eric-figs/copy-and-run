@@ -1,0 +1,4 @@
+#!/usr/bin/bash
+
+cp /mnt/input/*.R .
+cp *.R /mnt/output
