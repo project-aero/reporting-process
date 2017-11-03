@@ -178,7 +178,7 @@ tmpgrid <- rbind(
   )
 )
 tmpgrid <- cbind(id=as.integer(rownames(tmpgrid)), tmpgrid)
-data <- sim.7di.cases # data used by tmpfnc
+data <- ts(sim.7di$cases, start = sim.7di$time[1]) # data used by tmpfnc
 
 # do imperfect reporting
 start.time <- proc.time()
