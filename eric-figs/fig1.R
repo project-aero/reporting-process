@@ -4,6 +4,12 @@
 
 source("./R/header.R")
 
+# Restore random number generator state from file
+load("./data/RNGdata20170602_163629.Rdata")
+RNGversion(RNGversion) # enforces RNG version
+do.call("RNGkind",as.list(RNGkind)) # enforces RNG kind
+.Random.seed <- RNGseed # restore seed to global environment
+
 # Data
 
 load("./output/data/sim.7di.I.Rda")
