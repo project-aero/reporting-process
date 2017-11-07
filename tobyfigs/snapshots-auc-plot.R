@@ -50,35 +50,36 @@ auc_plot <- function(df){
 par(font.lab = 3)
 text_color <- "black"
 background_color <- "white"
-font_chosen <- "Helvetica"
+font_chosen <- "Times"
 auc_plot(auc_data) +
-  theme(text = element_text(color=text_color, size = 18, family=font_chosen),
-        title = element_text(size = 14),
+  theme(text = element_text(color=text_color, size = 14, family=font_chosen),
+        title = element_text(size = 12),
         line = element_line(color=text_color),
         rect = element_rect(color="black"),
         axis.title.x=element_blank(),
         axis.title.y = element_text(color=text_color,face = "plain", 
-                                    family=font_chosen, size = 14),
+                                    family=font_chosen, size = 10),
         axis.text.x = element_text(color = text_color, angle = 45,
-                                   vjust = 1, hjust=1),#family=font_chosen, size = 14),
-        axis.text.y = element_text(color = text_color, family=font_chosen),
+                                   vjust = 1, hjust=1,family=font_chosen, size = 9),
+        axis.text.y = element_text(color = text_color, family=font_chosen, size=9),
         axis.ticks = element_line(color=rgb(0,0,0,.25),line),
         axis.line = element_blank(),
-        legend.text = element_text(color = text_color, family=font_chosen),
-        legend.title = element_text(color = text_color, family = font_chosen),
+        legend.text = element_text(color = text_color, family=font_chosen, size=9),
+        legend.title = element_text(color = text_color, family = font_chosen, size=10),
+        legend.margin=margin(t=0, r=0.1, b=0, l=-0.2, unit="cm"),
         panel.grid.major = element_blank(),
         panel.grid.major.y = element_line(color = rgb(0,0,0,.25)),
         panel.grid.minor = element_blank(),
         panel.border = element_blank(),
         panel.background = element_rect(color=NA,fill=NA),
-        panel.spacing = unit(2, "lines"),
-        strip.text.y= element_text(color = text_color,angle = 270, family=font_chosen),
-        strip.text.x= element_text(color = text_color, family=font_chosen),
+        panel.spacing = unit(1.2, "lines"),
+        strip.text.y= element_text(color = text_color,angle = 270, family=font_chosen, size=10),
+        strip.text.x= element_text(color = text_color, family=font_chosen, size=10),
         strip.background = element_rect(fill=NA),
         plot.background = element_rect(color=NA, fill=background_color),
-        plot.margin = unit(c(1,1,1,1), "cm"))
+        plot.margin = unit(c(0.0,0.0,0.1,0.1), "cm"))
 
 
-ggsave("snapshots-auc.pdf",width =1.2*8.64,height=1.2*4.20)
+ggsave("snapshots-auc.pdf",width =5.2 ,height=3)
 
 
