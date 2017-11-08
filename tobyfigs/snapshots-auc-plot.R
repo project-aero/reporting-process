@@ -80,6 +80,7 @@ auc_plot(auc_data) +
         plot.margin = unit(c(0.0,0.0,0.1,0.1), "cm"))
 
 
-ggsave("snapshots-auc.tiff",width =5.2 ,height=3, dpi=300)
+ggsave("snapshots-auc.tiff",width =5.2 ,height=3, dpi = 300, units="in", compression="lzw")
+
 
 

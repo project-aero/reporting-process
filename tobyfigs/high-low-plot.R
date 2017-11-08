@@ -5,7 +5,7 @@ library(tidyverse)
 library(reshape2)
 library(colorspace)
 
-## Eric's AUC gradient 
+## Eric's AUC gradient  
 # Color scale with {colorspace}
 nlevels = 100
 AUC_colors <- diverge_hcl(
@@ -101,4 +101,4 @@ hl_plot(hl_data) +#theme_par() +
         plot.margin = unit(c(0.0,0.0,0.1,0.1), "cm"))
 
 
-ggsave("high-low.tiff",width =5.2 ,height=3, dpi = 300)
+ggsave("high-low.tiff",width =5.2 ,height=3, dpi = 300, units="in", compression="lzw")
