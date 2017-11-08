@@ -5,7 +5,7 @@ library(colorspace)
 library(lattice)
 library(fields)
 library(dplyr)
-
+library(Cairo)
 # Typography
 
 font.family <- "Times"
@@ -165,15 +165,19 @@ heat_map_plot <- function(bw){
   
   # PDF output
   ## specify 
-  pdf(
-    file = paste("heat-plot",bw,".pdf", sep=""),
+  tiff(
+    file = paste("heat-plot",bw,".tiff", sep=""),
+    #type="tiff",
     title = "Fig. 5", # displayed in title bar of PDF Reader
     width = figure.widths['column'], # full width, in inches
     height = figure.heights['page']*.7, # 70% of full height, in inches
+    units = "in",
+    compression="lzw", 
     family = font.family, 
-    pointsize = font.size.normal # default size of text (points).
+    pointsize = font.size.normal, # default size of text (points).
+    res = 300
   )
-  
+
   
   
   # separate heat plots

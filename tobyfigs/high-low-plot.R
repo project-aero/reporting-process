@@ -101,4 +101,4 @@ hl_plot(hl_data) +#theme_par() +
         plot.margin = unit(c(0.0,0.0,0.1,0.1), "cm"))
 
 
-ggsave("high-low.pdf",width =5.2 ,height=3)
+ggsave("high-low.tiff",width =5.2 ,height=3, dpi = 300)
