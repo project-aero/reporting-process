@@ -10,7 +10,7 @@ parallel::mc.reset.stream()
 load("checkpoint-02.rda")
 
 levs <- list()
-levs$bandwidth <- c(35, 100)
+levs$bandwidth <- c(36, 156)
 levs$lag <- 1
 analysis_des_mat <- do.call(expand.grid, levs)
 
