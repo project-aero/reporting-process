@@ -60,13 +60,12 @@ sample_process <- function(external_forcing, host_lifetime, infectious_days,
 
     times <- seq(0, observation_days)
 
-    beta_critical <- (params["gamma"] + params["d"]) / population_size
-    initial_fraction_critical <- 0.5
-
     params <- c(gamma=1 / infectious_days, mu=1 / host_lifetime,
                 d=1 / host_lifetime, eta=external_forcing / population_size,
                 beta=0, rho=0.1, S_0=1, I_0=0, R_0=0, N_0=population_size)
 
+    beta_critical <- (params["gamma"] + params["d"]) / population_size
+    initial_fraction_critical <- 0.5
     equil <- EndemicEquilSIR(beta = beta_critical * initial_fraction_critical,
                              eta = params["eta"], gamma = params["gamma"],
                              mu = params["mu"], p = 0)
