@@ -29,12 +29,13 @@ sample_process <- function(external_forcing, host_lifetime, infectious_days,
     params <- c(gamma=1 / infectious_days, mu=1 / host_lifetime,
                 d=1 / host_lifetime, eta=external_forcing / population_size,
                 beta=0, rho=0.1, S_0=1, I_0=0, R_0=0, N_0=population_size)
+    beta_critical <- (params["gamma"] + params["d"]) / population_size
     covnul <- data.frame(gamma_t=c(0, 0), mu_t=c(0, 0), d_t=c(0, 0),
-                         eta_t=c(0, 0), beta_t=c(0, 0),
+                         eta_t=c(0, 0), beta_t=rep(beta_critical, 2) * 0.5,
                          time=c(0, observation_days))
-    beta_final <- (params["gamma"] + params["d"]) / population_size
     covalt <- data.frame(gamma_t=c(0, 0), mu_t=c(0, 0), d_t=c(0, 0),
-                         eta_t=c(0, 0), beta_t=c(0, beta_final),
+                         eta_t=c(0, 0),
+                         beta_t=c(beta_critical * 0.5, beta_critical),
                          time=c(0, observation_days))
 
     simtest <- spaero::create_simulator(times=times, params=params, covar=covalt)
