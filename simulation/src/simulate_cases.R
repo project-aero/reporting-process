@@ -65,7 +65,7 @@ sample_process <- function(external_forcing, host_lifetime, infectious_days,
                 beta=0, rho=0.1, S_0=1, I_0=0, R_0=0, N_0=population_size)
 
     beta_critical <- (params["gamma"] + params["d"]) / population_size
-    initial_fraction_critical <- 0.5
+    initial_fraction_critical <- 0
     equil <- EndemicEquilSIR(beta = beta_critical * initial_fraction_critical,
                              eta = params["eta"], gamma = params["gamma"],
                              mu = params["mu"], p = 0)
@@ -74,11 +74,11 @@ sample_process <- function(external_forcing, host_lifetime, infectious_days,
     params["R_0"] <- equil[["R"]]
 
     covnul <- data.frame(gamma_t=c(0, 0), mu_t=c(0, 0), d_t=c(0, 0),
-                         eta_t=c(0, 0), beta_t=rep(beta_critical, 2) * 0.5,
+                         eta_t=c(0, 0), beta_t=rep(beta_critical, 2) * initial_fraction_critical,
                          time=c(0, observation_days))
     covalt <- data.frame(gamma_t=c(0, 0), mu_t=c(0, 0), d_t=c(0, 0),
                          eta_t=c(0, 0),
-                         beta_t=c(beta_critical * 0.5, beta_critical),
+                         beta_t=c(beta_critical * initial_fraction_critical, beta_critical),
                          time=c(0, observation_days))
 
     simtest <- spaero::create_simulator(times=times, params=params, covar=covalt)
