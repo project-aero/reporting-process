@@ -44,6 +44,10 @@ EndemicEquilSIR <- function(beta=(R0 * (mu + gamma)), eta=17/5e4,
       eq <- (-b - sqrt(b^2 - 4 * a * c)) / (2 * a)
       i.star <- ifelse(p == 1, 0, eq)
       s.star <- ifelse(p == 1, 0, mu * (1 - p)/ (beta * i.star + eta + mu))
+      if (beta == 0) {
+          i.star <- eta * mu / ((gamma + mu) * (eta + mu))
+          s.star <- mu / (eta + mu)
+      }
       if (verbose) {
         ds.star <- mu *(1 - p) - beta * s.star * i.star - eta * s.star - mu * s.star
         di.star <- beta * s.star * i.star + eta * s.star - (gamma + mu) * i.star
