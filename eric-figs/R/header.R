@@ -12,7 +12,8 @@ library(latex2exp) # used to include LaTeX expressions in plot text
 library(pomp) # required by spaero
 library(spaero) # model simulation and statistics
 
-# Helper functions
+
+# Helper functions --------------------------------------------------------
 
 ## Sample process
 sample_process <- function(external_forcing = 1 / 7, host_lifetime = 70 * 365,
@@ -64,7 +65,24 @@ analysis <- function(data,params){
     lag = params$lag)
 } 
 
-## Color palettes
+## CDC Epiweek to Dates
+## returns the start date of the CDC epiweek
+cdcweekToDate <- function(epiweek, weekday = 0) {
+  year = epiweek %/% 1e2
+  week = epiweek %% 1e2
+  jan1 <- as.Date(ISOdate(year,1,1))
+  jan1.wday <- as.POSIXlt(jan1)$wday
+  if (jan1.wday < 4) {
+    origin <- jan1 - jan1.wday
+  }else{
+    origin <- jan1 + (7-jan1.wday)
+  }
+  date <- origin+(week-1)*7+weekday
+  return(date)
+}
+
+
+# Color palettes ----------------------------------------------------------
 
 unipalette.lorder <- c(
   "black"="#252525", # Nero (grey)
