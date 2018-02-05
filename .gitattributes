@@ -2,3 +2,4 @@ eric-figs/design/ filter=lfs diff=lfs merge=lfs -text
 eric-figs/output/data/ filter=lfs diff=lfs merge=lfs -text
 eric-figs/packrat/bundles/* filter=lfs diff=lfs merge=lfs -text
 *.nb.html filter=lfs diff=lfs merge=lfs -text
+*.csv filter=lfs diff=lfs merge=lfs -text
