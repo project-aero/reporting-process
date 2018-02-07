@@ -13,6 +13,8 @@ auc_data$`Aggregation period` <- as.factor(auc_data$Aggregation.period)
 levels(auc_data$`Aggregation period`) <- c("Monthly~snapshots","Weekly~snapshots")
 
 auc_data$variable <- factor(auc_data$variable, levels = levels(auc_data$variable)[c(7,10,9,5,2,1,4,3,8,6)])
+auc_data$absAUC = abs(auc_data$AUC - 0.5)
+
 
 
 auc_plot <- function(df){
@@ -33,12 +35,13 @@ auc_plot <- function(df){
   
   ggplot(df) + 
     # geom_pointrange(aes(x=variable,y=AUC, ymin=AUC-AUC_err, ymax= AUC+AUC_err, color=variable)) +
-    geom_bar(aes(x=variable,y=AUC-0.5, fill = AUC, color = AUC),stat="identity"  ) + #, fill = "#088E7C") +
+    geom_bar(aes(x=variable,y=absAUC, fill = AUC, color = AUC),stat="identity"  ) + #, fill = "#088E7C") +
     facet_grid(`Infectious period`~`Aggregation period`,labeller = label_parsed)+
     geom_rangeframe(colour ="black") +
     scale_fill_gradientn(limits = c(0,1),colours=AUC_colors) +
     scale_color_gradientn(limits = c(0,1),colours=AUC_colors) +
-    scale_y_continuous(name = "AUC",limits = c(-0.5,0.5),labels=c("0.0","0.25","0.5","0.75","1.0"))
+    scale_y_continuous(name = "|AUC-0.5|",labels=c("0.0","0.1","0.2","0.3",
+                                                   "0.4","0.5"))
   #scale_x_continuous(name = "")+#,labels=c("Variance","Variance convexity","Autocovariance",
   #                                      "Autocorrelation","Decay time", "Mean",
   #                                      "Index of Dispersion", "Coefficient of variation",

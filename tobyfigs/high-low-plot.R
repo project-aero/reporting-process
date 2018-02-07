@@ -36,6 +36,7 @@ hl_data <- res %>%
   mutate(variable = as.factor(variable))
 
 nrows <- nrow(hl_data)/2
+hl_data$absAUC = abs(hl_data$AUC - 0.5)
 
 hl_data <- hl_data %>%
   mutate(err = lead(variable,nrows), AUC_err = lead(AUC,nrows)) %>%
@@ -55,12 +56,14 @@ levels(hl_data$neg_bin_k) <- c("High overdispersion", "Low overdispersion")
 #Define plotting function
 hl_plot <- function(hl_data){
   ggplot(hl_data) + 
-    geom_bar(aes(x=variable,y=AUC-0.5, fill = AUC, color = AUC),stat="identity"  ) + 
+    geom_bar(aes(x=variable,y=absAUC, fill = AUC, color = AUC),stat="identity"  ) + 
+    #labs(y = "|AUC - 0.5|") +
     facet_grid(reporting_prob~neg_bin_k) +
     geom_rangeframe(colour ="black") +
     scale_fill_gradientn(limits = c(0,1),colours=AUC_colors) +
-    scale_color_gradientn(limits = c(0,1),colours=AUC_colors) +
-    scale_y_continuous(name = "AUC",labels=c("0.0","0.25","0.5","0.75","1.0"))
+    scale_color_gradientn(limits = c(0,1),colours=AUC_colors) +#+
+    scale_y_continuous(name = "|AUC-0.5|",labels=c("0.0","0.1","0.2","0.3",
+                                             "0.4","0.5"))
 }
 
 
