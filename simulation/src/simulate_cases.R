@@ -13,7 +13,7 @@ levs$host_lifetime <- c(70 * 365)
 
 
 levs$infectious_days <- c(30, 7)
-levs$observation_days <- c(20) * 365
+levs$observation_days <- c(10) * 365
 levs$population_size <- 10^c(6)
 levs$process_reps <- 1000
 
