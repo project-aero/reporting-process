@@ -41,28 +41,32 @@ gray_colour <- rgb(0,0,0,.25)
 dl <- seq(0,1,0.01)
 
 ## AUC data ##
-load("res.RData")
+load("res0202.RData")
 res <- res[which(res$reporting_prob > 0.01),]
 
 
-heat_map_plot <- function(bw){
+heat_map_plot <- function(bw_weekly, bw_monthly, filename){
     
   ##Filter for bandwidth Choose either 35 or 100
-  res <- filter(res, bandwidth == bw)
+  #res <- filter(res, bandwidth == bw)
   
   ## Results for 7 day recovery
   res.7.wkly <- res[ which(res$infectious_days==7 
-                           & res$aggregation_days == 7), ]
+                           & res$aggregation_days == 7
+                           & res$bandwidth == bw_weekly), ]
   
   res.7.mon <- res[ which(res$infectious_days==7 
-                          & res$aggregation_days == 30), ]
+                          & res$aggregation_days == 30
+                          & res$bandwidth == bw_monthly), ]
   
   ## Results for 30 day recovery
   res.30.wkly <- res[ which(res$infectious_days==30 
-                            & res$aggregation_days == 7), ]
+                            & res$aggregation_days == 7
+                            & res$bandwidth == bw_weekly), ]
   
   res.30.mon <- res[ which(res$infectious_days==30 
-                           & res$aggregation_days == 30), ]
+                           & res$aggregation_days == 30
+                           & res$bandwidth == bw_monthly), ]
   
   ## function to organize data for heat plots ##
   org_data <- function(dat){
@@ -166,7 +170,7 @@ heat_map_plot <- function(bw){
   # PDF output
   ## specify 
   tiff(
-    file = paste("heat-plot",bw,".tiff", sep=""),
+    file = filename,#paste("heat-plot",bw_weekly, "_", bw_monthly,".tiff", sep=""),
     #type="tiff",
     title = "Fig. 5", # displayed in title bar of PDF Reader
     width = figure.widths['column'], # full width, in inches
@@ -259,5 +263,5 @@ heat_map_plot <- function(bw){
   dev.off()
 }
 
-heat_map_plot(35)
-heat_map_plot(100)
+heat_map_plot(36, 36, "./heat-plot36_36_0.tiff")
+#heat_map_plot(100)
