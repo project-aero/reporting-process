@@ -67,9 +67,14 @@ analysis <- function(data,params){
 
 ## CDC Epiweek to Dates
 ## returns the start date of the CDC epiweek
-cdcweekToDate <- function(epiweek, weekday = 0) {
-  year = epiweek %/% 1e2
-  week = epiweek %% 1e2
+cdcweekToDate <- function(epiweek, weekday = 0, year = NULL, week = NULL) {
+  if(missing(epiweek)) {
+    year <- year
+    week <- week
+  }else{
+    year <- epiweek %/% 1e2
+    week <- epiweek %% 1e2
+  }
   jan1 <- as.Date(ISOdate(year,1,1))
   jan1.wday <- as.POSIXlt(jan1)$wday
   if (jan1.wday < 4) {
