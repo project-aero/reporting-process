@@ -105,8 +105,12 @@ tychoL1.measles.CA.cases.imp.zoo.statswindow <- window(tychoL1.measles.CA.cases.
 tmpfcn <- function(x,agg.interval=1) {
   index <- index(x)
   interval <- mean(diff(index))
-  agg.groups <- rep(seq(index[length(index)], index[1], -interval*agg.interval), each=agg.interval)
-  agg.groups <- rev(agg.groups[1:length(x)])
+  # forwards:
+  agg.groups <- rep(seq(index[1], index[length(index)], interval*agg.interval), each=agg.interval)
+  agg.groups <- agg.groups[1:length(x)]
+  # reverse:
+  # agg.groups <- rep(seq(index[length(index)], index[1], -interval*agg.interval), each=agg.interval)
+  # agg.groups <- rev(agg.groups[1:length(x)])
   out <- aggregate(x, by = agg.groups, sum)
   return(out)
 }
