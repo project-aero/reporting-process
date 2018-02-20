@@ -40,13 +40,14 @@ AUC.colors <- diverge_hcl(
 gray_colour <- rgb(0,0,0,.25)
 dl <- seq(0,1,0.01)
 
-## AUC data ##
-load("res0202.RData")
-res <- res[which(res$reporting_prob > 0.01),]
 
 
-heat_map_plot <- function(bw_weekly, bw_monthly, filename){
-    
+heat_map_plot <- function(bw_weekly, bw_monthly, datafile, filename){
+  ## AUC data ##
+  load(datafile)
+  res <- res[which(res$reporting_prob > 0.01),]
+  
+  
   ##Filter for bandwidth Choose either 35 or 100
   #res <- filter(res, bandwidth == bw)
   
@@ -259,9 +260,25 @@ heat_map_plot <- function(bw_weekly, bw_monthly, filename){
               ylab="", axes=F, useRaster = T)
   axis(1, at=seq(0.0,1,0.2), labels=seq(0.0,1,0.2), col.ticks = gray_colour, 
        col = "white", pos = -1.5, family = font.family, cex.axis=font.scales['M'])
-  mtext(side=1, "AUC", line=3, , cex=font.scales['M'])
+  mtext(side=1, "AUC", line=3, cex=font.scales['M'])
   dev.off()
 }
 
-heat_map_plot(36, 36, "./heat-plot36_36_0.tiff")
+#Fig 5: T = 20 yrs, R0(0) = 0 
+heat_map_plot(35, 35,"res.RData", "./heat-plot35.tiff")
+#Fig S1: T = 20 yrs, R0(0) = 0 
+heat_map_plot(100, 100,"res.RData", "./heat-plot100.tiff")
+#Fig S2: T = 20 yrs, R0(0) = 0
+heat_map_plot(156, 36,"res0202.RData", "./heat-plot156_36_0.tiff")
+#Fig S3: T = 20 yrs, R0(0) = 0.5
+heat_map_plot(36, 36,"res0201.RData", "./heat-plot36_36_0p5.tiff")
+#Fig S4: T = 10 yrs, R0(0) = 0.5
+heat_map_plot(36, 36,"res0207.RData", "./heat-plot36_36_0p5_10.tiff")
+
+
+#Additional T = 20 yrs, R0(0) = 0.5
+heat_map_plot(156, 36,"res0201.RData", "./heat-plot156_36_0p5.tiff")
+#Additional T = 20 yrs, R0(0) = 0
+heat_map_plot(36, 36,"res0202.RData", "./heat-plot36_36_0.tiff")
+
 #heat_map_plot(100)
