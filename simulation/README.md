@@ -1,6 +1,5 @@
 The ``simulation`` subdirectory contains:
-1) simulation results used to generate the figures in the paper contained in the zip archive
-``work-2017-08-29_17-29-29-light.zip``. 
+1) simulation results used to generate the figures in the paper contained in the zip archive.
 2) All scripts used to generate the simulation results in the directory ``src``.
 3) Docker files (see below)
 4) A copy of the R package spaero
