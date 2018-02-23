@@ -1,0 +1,7 @@
+# Packrat
+packrat/lib*/
+packrat/src
+
+# Ignored folders
+sketches/
+design/
