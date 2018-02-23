@@ -13,6 +13,6 @@ chmod 757 ${outdir}
 docker run -v ${indir}:/mnt/input:ro \
        -v ${outdir}:/mnt/output \
        -w ${hdir}/work \
-       eamon/reporting-proc-eric-figs:v20171027 /bin/bash -c "/mnt/input/copy-and-run"
+       eamon/reporting-proc-eric-figs:v20180223 /bin/bash -c "/mnt/input/copy-and-run"
 chown -R --reference $0 ${outdir}
 chmod 755 ${outdir}
