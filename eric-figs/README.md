@@ -6,9 +6,9 @@ The R working directory is assumed to be ```eric-figs/```
 
 Directory ```eric-figs/``` contains code and output for simulated data, and for figures 1, 2, and 3.
 
-```eric-figs/data/``` contains source data files, in this case consisting of saved snapshots of the complete description of the random number generator state, required to reproduce simulations used in the figures exactly. Simulations were produced using a RNG of kind "Mersenne-Twister" and normal.kind "Inversion" under R version 3.3.2 eunning on OSX 10.9.5.
-
-```eric-figs/install/``` contains any packages not installable from CRAN or GitHub.  These figures rely on a custom version of SPAERO not available on a public repository.
+```eric-figs/data/``` contains source data files, in this case consisting of saved snapshots of  
+1. the complete description of the random number generator state, required to reproduce simulations used in the figures exactly. Simulations were produced using a RNG of kind "Mersenne-Twister" and normal.kind "Inversion" under R version 3.3.2 eunning on OSX 10.9.5.  
+2. A copy of Level 1 data from Project Tycho, used for figure 1.
 
 ```eric-figs/output/plots``` contains plots output from ```eric-figs/fig1.R```, ```eric-figs/fig2.R```, and ```eric-figs/fig3.R``` in PDF format
 
