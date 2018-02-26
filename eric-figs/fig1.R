@@ -51,7 +51,7 @@ tychoL1.measles.CA.cases.imp.zoo <- zoo(tychoL1.measles.CA$cases.imp,tychoL1.mea
 # Set windows -----------------------------------------------------
 
 ## Statistics bandwidth
-bandwidth_weeks <- 26
+bandwidth_weeks <- 54
 bandwidth <- bandwidth_weeks * 7  # 104 weeks = 104*7 days
 
 ## date of peak of epidemic
@@ -275,8 +275,8 @@ mtext(text="Year", side=3, line = 2.5)
 title(ylab="Variance", line = 4)
 
 ## Taus (Tau depends on all plotted values of the variance)
-text(x=c(statsend-104*7,statsend-18*7,statsend+6*7),
-     y=c(9500,8500,5500),
+text(x=c(statsend-108*7,statsend+6*7,statsend+6*7),
+     y=c(9500,9500,4500),
      adj=0,
      cex=font.scales['M'],
      col=c(color.4wk,
