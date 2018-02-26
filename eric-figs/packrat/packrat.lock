@@ -1,9 +1,7 @@
 PackratFormat: 1.4
 PackratVersion: 0.4.8.1
 RVersion: 3.4.3
-Repos:
-    MRAN_2017_10_25=http://mran.revolutionanalytics.com/snapshot/2017-10-25/,
-    MRAN_2017_07_18=http://mran.revolutionanalytics.com/snapshot/2017-07-18/
+Repos: CRAN=http://cloud.r-project.org
 
 Package: BH
 Source: CRAN
