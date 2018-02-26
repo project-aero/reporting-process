@@ -51,8 +51,8 @@ tychoL1.measles.CA.cases.imp.zoo <- zoo(tychoL1.measles.CA$cases.imp,tychoL1.mea
 # Set windows -----------------------------------------------------
 
 ## Statistics bandwidth
-bandwidth_weeks <- 54
-bandwidth <- bandwidth_weeks * 7  # 104 weeks = 104*7 days
+bandwidth_weeks <- 52
+bandwidth <- bandwidth_weeks * 7 # days
 
 ## date of peak of epidemic
 peakdate <- cdcweekToDate(year=1990, week=34, weekday=6)
