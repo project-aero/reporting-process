@@ -1,12 +1,17 @@
 PackratFormat: 1.4
 PackratVersion: 0.4.8.1
-RVersion: 3.4.2
+RVersion: 3.4.3
 Repos: CRAN=http://cran.us.r-project.org
 
 Package: BH
 Source: CRAN
 Version: 1.62.0-1
 Hash: 14dfb3e8ffe20996118306ff4de1fab2
+
+Package: Cairo
+Source: CRAN
+Version: 1.5-9
+Hash: 6acb4ad0cff51c9f8148e344db173f70
 
 Package: Formula
 Source: CRAN
@@ -420,9 +425,3 @@ Package: yaml
 Source: CRAN
 Version: 2.1.14
 Hash: c81230c3a7d9ba20607ad6b4331173d1
-
-Package: Cairo
-Source: CRAN
-Version: 1.5-9
-
-
