@@ -420,3 +420,9 @@ Package: yaml
 Source: CRAN
 Version: 2.1.14
 Hash: c81230c3a7d9ba20607ad6b4331173d1
+
+Package: Cairo
+Source: CRAN
+Version: 1.5-9
+
+
