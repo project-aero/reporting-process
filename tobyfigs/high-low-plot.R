@@ -5,7 +5,7 @@ library(tidyverse)
 library(reshape2)
 library(colorspace)
 
-## Eric's AUC gradient 
+## Eric's AUC gradient  
 # Color scale with {colorspace}
 nlevels = 100
 AUC_colors <- diverge_hcl(
@@ -36,6 +36,7 @@ hl_data <- res %>%
   mutate(variable = as.factor(variable))
 
 nrows <- nrow(hl_data)/2
+hl_data$absAUC = abs(hl_data$AUC - 0.5)
 
 hl_data <- hl_data %>%
   mutate(err = lead(variable,nrows), AUC_err = lead(AUC,nrows)) %>%
@@ -55,12 +56,14 @@ levels(hl_data$neg_bin_k) <- c("High overdispersion", "Low overdispersion")
 #Define plotting function
 hl_plot <- function(hl_data){
   ggplot(hl_data) + 
-    geom_bar(aes(x=variable,y=AUC-0.5, fill = AUC, color = AUC),stat="identity"  ) + 
+    geom_bar(aes(x=variable,y=absAUC, fill = AUC, color = AUC),stat="identity"  ) + 
+    #labs(y = "|AUC - 0.5|") +
     facet_grid(reporting_prob~neg_bin_k) +
     geom_rangeframe(colour ="black") +
     scale_fill_gradientn(limits = c(0,1),colours=AUC_colors) +
-    scale_color_gradientn(limits = c(0,1),colours=AUC_colors) +
-    scale_y_continuous(name = "AUC",labels=c("0.0","0.25","0.5","0.75","1.0"))
+    scale_color_gradientn(limits = c(0,1),colours=AUC_colors) +#+
+    scale_y_continuous(name = "|AUC-0.5|",labels=c("0.0","0.1","0.2","0.3",
+                                             "0.4","0.5"))
 }
 
 
@@ -70,33 +73,35 @@ hl_plot <- function(hl_data){
 
 text_color <- "black"
 background_color <- "white"
-font_chosen <- "Helvetica"
+font_chosen <- "Times"
 
 hl_plot(hl_data) +#theme_par() +
-  theme(text = element_text(color=text_color, size = 18, family=font_chosen),
-        title = element_text(size = 14),
+  theme(text = element_text(color=text_color, size = 14, family=font_chosen),
+        title = element_text(size = 12),
         line = element_line(color=text_color),
         rect = element_rect(color="black"),
         axis.title.x=element_blank(),
         axis.title.y = element_text(color=text_color,face = "plain", 
-                                    family=font_chosen, size = 14),
+                                    family=font_chosen, size = 10),
         axis.text.x = element_text(color = text_color, angle = 45,
-                                   vjust = 1, hjust=1),#family=font_chosen, size = 14),
-        axis.text.y = element_text(color = text_color, family=font_chosen),
+                                   vjust = 1, hjust=1,family=font_chosen, size = 9),
+        axis.text.y = element_text(color = text_color, family=font_chosen, size=9),
         axis.ticks = element_line(color=rgb(0,0,0,.25),line),
         axis.line = element_blank(),
-        legend.text = element_text(color = text_color, family=font_chosen),
-        legend.title = element_text(color = text_color, family = font_chosen),
+        legend.text = element_text(color = text_color, family=font_chosen, size=9),
+        legend.title = element_text(color = text_color, family = font_chosen, size=10),
+        legend.margin=margin(t=0, r=0.1, b=0, l=-0.2, unit="cm"),
         panel.grid.major = element_blank(),
         panel.grid.major.y = element_line(color = rgb(0,0,0,.25)),
         panel.grid.minor = element_blank(),
         panel.border = element_blank(),
         panel.background = element_rect(color=NA,fill=NA),
-        panel.spacing = unit(2, "lines"),
-        strip.text.y= element_text(color = text_color,angle = 270, family=font_chosen),
-        strip.text.x= element_text(color = text_color, family=font_chosen),
+        panel.spacing = unit(1.2, "lines"),
+        strip.text.y= element_text(color = text_color,angle = 270, family=font_chosen, size=10),
+        strip.text.x= element_text(color = text_color, family=font_chosen, size=10),
         strip.background = element_rect(fill=NA),
         plot.background = element_rect(color=NA, fill=background_color),
-        plot.margin = unit(c(1,1,1,1), "cm"))
+        plot.margin = unit(c(0.0,0.0,0.1,0.1), "cm"))
 
-ggsave("high-low.pdf",width =1.2*8.64,height=1.2*4.20)
+
+ggsave("high-low.tiff",width =5.2 ,height=3, dpi = 300, units="in", compression="lzw")
